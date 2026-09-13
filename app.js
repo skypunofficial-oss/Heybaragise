@@ -1,11 +1,21 @@
 // ============================
 // 1) ใส่ค่าจาก Supabase Project Settings > API
 // ============================
-const SUPABASE_URL = "https://supabase.com/dashboard/project/amrdtfwlmkkgtsozhupi/settings/api-keys";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oLIc9gwzec-BwJgSwhJncw_8yucB6Wu";
+const SUPABASE_URL = "https://amrdtfwlmkkgtsozhupi.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_oLIc9gwzec-BwJgSwhJncw_8yucB6Wu";
+
 const sb = supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
 );
 
 const state = { products: [], promotions: [], combos: [], selectedProduct: null, isAdmin: false };
