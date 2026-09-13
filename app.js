@@ -93,26 +93,117 @@ function openProduct(id){
     ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ไปยังลิงก์ภายนอก / สั่งซื้อ ↗</a></p>`:""}`;
   showView("detail");
 }
+const searchInput = $("#search");
 
-$("#search").addEventListener("input",e=>{
-  const q=e.target.value.toLowerCase();
-  renderProducts(state.products.filter(p=>`${p.name} ${p.short_description}`.toLowerCase().includes(q)));
-});
-$$("[data-view]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
-$$(".close").forEach(b=>b.addEventListener("click",()=>closeDialog(b.dataset.close)));
+if (searchInput) {
+  searchInput.addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
 
-let brandClicks=0, brandTimer;
-$("#brand").addEventListener("click",async()=>{
-  brandClicks++; clearTimeout(brandTimer); brandTimer=setTimeout(()=>brandClicks=0,1800);
-  if(brandClicks>=5){ brandClicks=0; const {data:{session}}=await sb.auth.getSession(); if(session){await enterAdmin();}else openDialog("authDialog");}
-});
+    renderProducts(
+      state.products.filter(p =>
+        `${p.name} ${p.short_description}`
+          .toLowerCase()
+          .includes(q)
+      )
+    );
+  });
+}
 
-$("#loginForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const {error}=await sb.auth.signInWithPassword({email:$("#loginEmail").value,password:$("#loginPassword").value});
-  if(error) return toast(error.message);
-  closeDialog("authDialog"); await enterAdmin();
-});
+
+$$("[data-view]").forEach(b =>
+  b.addEventListener("click", () =>
+    showView(b.dataset.view)
+  )
+);
+
+
+$$(".close").forEach(b =>
+  b.addEventListener("click", () =>
+    closeDialog(b.dataset.close)
+  )
+);
+
+
+let brandClicks = 0;
+let brandTimer;
+
+
+const brandButton = $("#brand");
+
+if (brandButton) {
+
+  brandButton.addEventListener("click", async () => {
+
+    brandClicks++;
+
+    clearTimeout(brandTimer);
+
+    brandTimer = setTimeout(
+      () => brandClicks = 0,
+      1800
+    );
+
+
+    if (brandClicks >= 5) {
+
+      brandClicks = 0;
+
+      const {
+        data: { session }
+      } = await sb.auth.getSession();
+
+
+      if (session) {
+
+        await enterAdmin();
+
+      } else {
+
+        openDialog("authDialog");
+
+      }
+
+    }
+
+  });
+
+}
+
+
+const loginForm = $("#loginForm");
+
+if (loginForm) {
+
+  loginForm.addEventListener("submit", async e => {
+
+    e.preventDefault();
+
+    const { error } =
+      await sb.auth.signInWithPassword({
+
+        email:
+          $("#loginEmail").value,
+
+        password:
+          $("#loginPassword").value
+
+      });
+
+
+    if (error) {
+
+      return toast(error.message);
+
+    }
+
+
+    closeDialog("authDialog");
+
+    await enterAdmin();
+
+  });
+
+}
 $("#logoutBtn").addEventListener("click",async()=>{await sb.auth.signOut();state.isAdmin=false;showView("home");toast("ออกจากระบบแล้ว");});
 
 async function enterAdmin(){
