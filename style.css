@@ -1,3 +1,10 @@
+@font-face {
+    font-family: "JaoCherry";
+    src: url("fonts/JaoCherry.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
 /* =========================================
    HEYBARAGISE
    Pastel Blue × Pink Glassmorphism
@@ -1543,4 +1550,41 @@ h3 {
             column;
     }
 
+}
+/* =========================================
+   JAOCHERRY FONT OVERRIDE
+========================================= */
+
+body,
+button,
+input,
+textarea,
+select,
+label {
+    font-family: "JaoCherry", sans-serif !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.brand,
+.hero,
+.section-head,
+.card-body,
+.info-card,
+.package,
+.primary,
+.external-link,
+.back,
+.tab,
+.small,
+.admin-head,
+.admin-row,
+.modal,
+.recommendation-card {
+    font-family: "JaoCherry", sans-serif !important;
+    font-weight: normal !important;
 }
