@@ -1460,6 +1460,86 @@ footer {
             flex-start;
 
         flex-direction:
+           /* =========================================
+   FONT SYSTEM
+========================================= */
+
+body {
+    font-family:
+        "DM Sans",
+        "Prompt",
+        sans-serif;
+}
+
+/* ชื่อร้าน */
+.store-name {
+    font-family:
+        "Playfair Display",
+        serif;
+
+    font-style: italic;
+
+    font-weight: 600;
+
+    letter-spacing: 0.5px;
+}
+
+/* ข้อความหน้าร้าน */
+.hero-line {
+    font-family:
+        "DM Sans",
+        "Prompt",
+        sans-serif;
+
+    letter-spacing: 1px;
+
+    font-weight: 600;
+
+    margin: 10px 0;
+}
+
+.blue-line {
+    color: #5f91b7;
+}
+
+.yellow-line {
+    color: #c28a42;
+
+    font-family:
+        "Playfair Display",
+        "Prompt",
+        serif;
+
+    font-weight: 600;
+}
+
+
+/* หัวข้อมีลูกเล่น */
+h1,
+h2,
+h3 {
+    font-family:
+        "Prompt",
+        sans-serif;
+
+    letter-spacing: -0.2px;
+}
+
+.hero h1 {
+    font-family:
+        "Playfair Display",
+        serif;
+}
+
+.card-body h3,
+.info-card h2,
+.section-head h2 {
+    font-family:
+        "Prompt",
+        sans-serif;
+
+    font-weight: 600;
+}
             column;
     }
 
