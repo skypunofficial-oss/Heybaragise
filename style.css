@@ -1,10 +1,16 @@
 @font-face {
     font-family: "JaoCherry";
-    src: url("LKKaohom-Freecomm.ttf") format("truetype");
+    src: url("fonts/LKKaohom-Freecomm.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
     font-display: swap;
 }
+:root {
+    --accent-color: #9ed8f5;
+    --secondary-color: #f6b6d1;
+    --background-color: #eef8ff;
+}
+
 /* =========================================
    HEYBARAGISE
    Pastel Blue × Pink Glassmorphism
@@ -1467,109 +1473,40 @@ footer {
             flex-start;
 
         flex-direction:
-           /* =========================================
-   FONT SYSTEM
+           
+/* =========================================
+   DYNAMIC THEME + JAOCHERRY
 ========================================= */
 
 body {
-    font-family:
-        "DM Sans",
-        "Prompt",
-        sans-serif;
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--accent-color) 25%, white),
+            #eef7ff 48%,
+            color-mix(in srgb, var(--secondary-color) 25%, white)
+        );
 }
 
-/* ชื่อร้าน */
-.store-name {
-    font-family:
-        "Playfair Display",
-        serif;
-
-    font-style: italic;
-
-    font-weight: 600;
-
-    letter-spacing: 0.5px;
+body.has-custom-background {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
-/* ข้อความหน้าร้าน */
-.hero-line {
-    font-family:
-        "DM Sans",
-        "Prompt",
-        sans-serif;
-
-    letter-spacing: 1px;
-
-    font-weight: 600;
-
-    margin: 10px 0;
+body.has-custom-background::before,
+body.has-custom-background::after {
+    opacity: .25;
 }
-
-.blue-line {
-    color: #5f91b7;
-}
-
-.yellow-line {
-    color: #c28a42;
-
-    font-family:
-        "Playfair Display",
-        "Prompt",
-        serif;
-
-    font-weight: 600;
-}
-
-
-/* หัวข้อมีลูกเล่น */
-h1,
-h2,
-h3 {
-    font-family:
-        "Prompt",
-        sans-serif;
-
-    letter-spacing: -0.2px;
-}
-
-.hero h1 {
-    font-family:
-        "Playfair Display",
-        serif;
-}
-
-.card-body h3,
-.info-card h2,
-.section-head h2 {
-    font-family:
-        "Prompt",
-        sans-serif;
-
-    font-weight: 600;
-}
-            column;
-    }
-
-}
-/* =========================================
-   JAOCHERRY FONT OVERRIDE
-========================================= */
 
 body,
 button,
 input,
 textarea,
 select,
-label {
-    font-family: "JaoCherry", sans-serif !important;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
+label,
+h1,h2,h3,h4,h5,h6,
 .brand,
 .hero,
 .section-head,
@@ -1585,6 +1522,303 @@ h6,
 .admin-row,
 .modal,
 .recommendation-card {
-    font-family: "JaoCherry", sans-serif !important;
+    font-family: "JaoCherry", "Prompt", sans-serif !important;
     font-weight: normal !important;
+}
+
+.brand-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.social-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    min-height: 32px;
+}
+
+.social-link {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    text-decoration: none;
+    color: #6f87a0;
+    background: rgba(255,255,255,.34);
+    border: 1px solid rgba(255,255,255,.60);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 5px 18px rgba(115,145,176,.12);
+    transition: transform .2s ease, background .2s ease;
+}
+
+.social-link:hover {
+    transform: translateY(-3px) scale(1.06);
+    background: rgba(255,255,255,.62);
+}
+
+.social-link img {
+    width: 19px;
+    height: 19px;
+    object-fit: contain;
+}
+
+.social-fallback {
+    font-family: Arial, sans-serif !important;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.recommendation-section {
+    margin-top: 46px;
+    margin-bottom: 42px;
+}
+
+.section-label {
+    display: block;
+    color: #9aa8b9;
+    font-family: "Prompt", sans-serif !important;
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.recommendation-card {
+    overflow: hidden;
+    border-radius: 26px;
+    transition: transform .3s ease;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-6px);
+}
+
+.recommendation-image,
+.recommendation-placeholder {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recommendation-placeholder {
+    font-size: 68px;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--accent-color) 35%, white),
+        color-mix(in srgb, var(--secondary-color) 35%, white)
+    );
+}
+
+.recommendation-body {
+    padding: 18px;
+}
+
+.recommendation-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    color: #668caf;
+    background: color-mix(in srgb, var(--accent-color) 25%, white);
+}
+
+.recommendation-body h3 {
+    color: #596b86;
+    margin: 10px 0 7px;
+}
+
+.recommendation-body p {
+    color: #8793a6;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.recommendation-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #e28bad;
+    text-decoration: none;
+}
+
+.recommendation-mini-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.recommendation-mini {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 9px;
+    border-radius: 15px;
+    background: rgba(255,255,255,.24);
+}
+
+.recommendation-mini img,
+.mini-placeholder {
+    width: 56px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 9px;
+    flex: 0 0 auto;
+}
+
+.mini-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.4);
+}
+
+.recommendation-mini b {
+    display: block;
+    color: #60718a;
+}
+
+.recommendation-mini a {
+    display: inline-block;
+    margin-top: 4px;
+    color: #e28bad;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.inline-link {
+    color: #e28bad;
+    text-decoration: none;
+}
+
+.primary,
+.external-link,
+.tab.active {
+    background:
+        linear-gradient(
+            135deg,
+            var(--accent-color),
+            var(--secondary-color)
+        );
+}
+
+.panel-intro {
+    margin-bottom: 16px;
+}
+
+.panel-intro h3 {
+    margin-bottom: 5px;
+    color: #596b86;
+}
+
+.panel-intro p {
+    margin: 0;
+    color: #8793a6;
+}
+
+.settings-grid {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 18px;
+    align-items: start;
+}
+
+.settings-preview,
+.settings-form {
+    border-radius: 24px;
+    padding: 18px;
+}
+
+.settings-preview-label {
+    color: #718097;
+    margin-bottom: 10px;
+}
+
+.background-preview {
+    min-height: 320px;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg,#dff6ff,#f2e5ff,#ffe5f1);
+    color: #8190a5;
+}
+
+.background-preview img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
+}
+
+.color-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.color-pair input[type="color"] {
+    width: 100%;
+    min-height: 46px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .brand-area {
+        align-items: center;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .background-preview,
+    .background-preview img {
+        min-height: 230px;
+        height: 230px;
+    }
+
+    .color-pair {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .recommendation-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .recommendation-image,
+    .recommendation-placeholder {
+        height: 230px;
+    }
+
+    .recommendation-body {
+        padding: 13px;
+    }
 }
