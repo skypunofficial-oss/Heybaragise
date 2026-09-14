@@ -14,7 +14,7 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Prompt:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
 
-<link rel="stylesheet" href="style.css?v=45">
+<link rel="stylesheet" href="style.css?v=50">
 </head>
 <body>
   <div class="orb orb1"></div><div class="orb orb2"></div>
@@ -85,6 +85,8 @@
         <button class="tab active" data-admin-tab="products">สินค้า</button>
         <button class="tab" data-admin-tab="promotions">โปรโมชั่น</button>
         <button class="tab" data-admin-tab="combos">Combo</button>
+        <button class="tab" data-admin-tab="social">ติดต่อ</button>
+        <button class="tab" data-admin-tab="settings">พื้นหลัง & ธีม</button>
       </div>
 
       <div id="adminProducts" class="admin-panel active">
@@ -100,6 +102,56 @@
       <div id="adminCombos" class="admin-panel">
         <button id="addComboBtn" class="primary">＋ สร้าง Combo ลดราคา</button>
         <div id="adminComboList" class="admin-list"></div>
+      </div>
+
+      <div id="adminSocial" class="admin-panel">
+        <div class="panel-intro">
+          <h3>🌐 ช่องทางติดต่อ</h3>
+          <p>เพิ่ม Instagram, X, LINE หรือช่องทางอื่น พร้อมรูปโลโก้และลิงก์ภายนอก</p>
+        </div>
+        <button id="addSocialBtn" class="primary">＋ เพิ่มช่องทางติดต่อ</button>
+        <div id="adminSocialList" class="admin-list"></div>
+      </div>
+
+      <div id="adminSettings" class="admin-panel">
+        <div class="panel-intro">
+          <h3>🖼️ พื้นหลัง & ธีม</h3>
+          <p>อัปโหลดรูปพื้นหลัง ปรับสีเอง หรือให้ระบบเลือกสีพาสเทลจากรูปให้อัตโนมัติ</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="settings-preview glass">
+            <div class="settings-preview-label">Preview</div>
+            <div id="backgroundPreview" class="background-preview">
+              <span>ใช้ธีมเริ่มต้นฟ้า × ชมพู</span>
+            </div>
+          </div>
+
+          <form id="siteSettingsForm" class="glass settings-form">
+            <label>รูปพื้นหลัง
+              <input id="backgroundImage" type="file" accept="image/*" />
+            </label>
+
+            <label class="check">
+              <input id="autoTheme" type="checkbox" checked />
+              ปรับสีธีมจากรูปอัตโนมัติ
+            </label>
+
+            <div class="color-pair">
+              <label>สีหลัก
+                <input id="accentColor" type="color" value="#9ed8f5" />
+              </label>
+              <label>สีรอง
+                <input id="secondaryColor" type="color" value="#f6b6d1" />
+              </label>
+            </div>
+
+            <button class="primary" type="submit">บันทึกพื้นหลังและธีม</button>
+            <button id="removeBackgroundBtn" type="button" class="small danger">
+              🗑 ลบรูปพื้นหลัง / กลับธีมเริ่มต้น
+            </button>
+          </form>
+        </div>
       </div>
     </section>
   </main>
@@ -142,12 +194,32 @@
     <form id="promoForm">
       <input type="hidden" id="promoId" />
       <label>สินค้า<select id="promoProduct"></select></label>
-      <label>ชื่อโปรโมชั่น<input id="promoTitle" required /></label>
+      <label>ประเภท
+        <select id="promoCategory">
+          <option value="promotion">🎁 โปรโมชั่น</option>
+          <option value="recommended">🎬 น่าดู / แนะนำ</option>
+        </select>
+      </label>
+      <label>ชื่อโปรโมชั่น / ชื่อเรื่อง<input id="promoTitle" required /></label>
       <label>รายละเอียด<textarea id="promoDescription"></textarea></label>
       <label>รูปโปรโมท/Poster<input id="promoImage" type="file" accept="image/*" /></label>
       <label>ลิงก์ภายนอก<input id="promoLink" type="url" placeholder="https://..." /></label>
       <label class="check"><input id="promoActive" type="checkbox" checked /> เปิดแสดง</label>
       <button class="primary" type="submit">บันทึกโปรโมชั่น</button>
+    </form>
+  </dialog>
+
+  <dialog id="socialDialog" class="modal glass">
+    <button class="close" data-close="socialDialog">×</button>
+    <h2 id="socialFormTitle">เพิ่มช่องทางติดต่อ</h2>
+    <form id="socialForm">
+      <input type="hidden" id="socialId" />
+      <label>ชื่อช่องทาง<input id="socialName" required placeholder="Instagram" /></label>
+      <label>ลิงก์ภายนอก<input id="socialLink" type="url" required placeholder="https://..." /></label>
+      <label>รูปโลโก้<input id="socialImage" type="file" accept="image/*" /></label>
+      <label>ลำดับการแสดง<input id="socialOrder" type="number" min="0" value="0" /></label>
+      <label class="check"><input id="socialActive" type="checkbox" checked /> แสดงบนหน้าร้าน</label>
+      <button class="primary" type="submit">บันทึกช่องทาง</button>
     </form>
   </dialog>
 
