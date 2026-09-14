@@ -295,3 +295,50 @@ $("#comboForm").addEventListener("submit",async e=>{e.preventDefault();try{
 window.deleteCombo=async id=>{if(!confirm("ลบ Combo?"))return;const {error}=await sb.from("combos").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
 
 loadAll();
+
+async function loadSocialLinks() {
+
+  const { data, error } = await sb
+    .from("social_links")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", {
+      ascending: true
+    });
+
+  if (error) {
+    console.error("Social links error:", error);
+    return;
+  }
+
+  renderSocialLinks(data || []);
+}
+
+
+function renderSocialLinks(items) {
+
+  const container = $("#socialLinks");
+
+  if (!container) return;
+
+
+  container.innerHTML = items.map(item => `
+
+    <a
+      href="${item.external_url}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-link"
+      aria-label="${item.name}"
+    >
+
+      <img
+        src="${item.icon_url}"
+        alt="${item.name}"
+      >
+
+    </a>
+
+  `).join("");
+
+}
