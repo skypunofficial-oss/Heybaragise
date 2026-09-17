@@ -180,6 +180,16 @@ async function uploadImage(file, folder = "images") {
   const { error } = await sb.storage.from("media").upload(path, file, { upsert: false, contentType: file.type }); if (error) throw error;
   return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
 }
+$("#previewStoreBtn")?.addEventListener("click", () => {
+
+    showView("home");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+});
 
 // ---------------- Product ----------------
 const addProductBtn = $("#addProductBtn"); if (addProductBtn) addProductBtn.onclick = () => { resetProductForm(); openDialog("productDialog"); };
