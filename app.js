@@ -60,13 +60,13 @@ function escapeHtml(value = "") {
 /*
   Dynamic text helper:
   Thai stays LKKaohom.
-  Latin / English / numbers use JaoCherry.
+  Latin / English / numbers use OngleipYuntaeng.
   This avoids forcing one font on every script.
 */
 function mixedText(value = "") {
   const safe = escapeHtml(value);
   return safe.replace(
-    /([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s.,!?'"&+\-_/:%#()]*[A-Za-zÀ-ÿ0-9])/g,
+    /([A-Za-zÀ-ÿ0-9가-힣ㄱ-ㅎㅏ-ㅣ][A-Za-zÀ-ÿ0-9가-힣ㄱ-ㅎㅏ-ㅣ\s.,!?'"&+\-_/:%#()]*[A-Za-zÀ-ÿ0-9가-힣ㄱ-ㅎㅏ-ㅣ])/g,
     '<span class="font-en">$1</span>'
   );
 }
