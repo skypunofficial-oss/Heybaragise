@@ -13,8 +13,8 @@
 }
 
 @font-face {
-  font-family: "JaoCherry";
-  src: url("fonts/JaoCherry.ttf") format("truetype");
+  font-family: "OngleipYuntaeng";
+  src: url("fonts/Ongleip_Yuntaeng.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -63,7 +63,7 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 .font-en {
-  font-family: "JaoCherry", sans-serif;
+  font-family: "OngleipYuntaeng", sans-serif;
   font-weight: normal;
 }
 
