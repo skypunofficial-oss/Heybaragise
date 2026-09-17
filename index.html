@@ -3,35 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#dff6ff" />
   <title>Heybaragise 🌻🐰 | Premium Apps</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
-<link rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin>
-
-<link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Prompt:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-
-<link rel="stylesheet" href="style.css?v=50">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=80">
 </head>
 <body>
-  <div class="orb orb1"></div><div class="orb orb2"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
 
   <header class="glass header">
-<button
-    id="brand"
-    class="brand"
-    type="button"
->
-    𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
-</button>
-    
-    <div
-    id="socialLinks"
-    class="social-links"
-></div>
+    <div class="brand-area">
+      <button id="brand" class="brand" type="button">𝐻𝑒𝓎𝒷𝒶𝑟𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒</button>
+      <div id="socialLinks" class="social-links" aria-label="ช่องทางติดต่อ"></div>
+    </div>
     <nav>
       <button data-view="home">สินค้า</button>
       <button data-view="promo">โปรโมชั่น</button>
@@ -41,24 +28,31 @@
 
   <main class="container">
     <section id="homeView" class="view active">
-<div class="hero-brand">
+      <div class="hero glass">
+        <div class="hero-brand">
+          <h1 class="store-name">𝐻𝑒𝓎𝒷𝒶𝑟𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒</h1>
+          <p class="hero-line blue-line">🩵 ꜱᴛᴀʀᴛ ʏᴏᴜʀ ᴅᴀʏ ʀɪɢʜᴛ ᴡɪᴛʜ ᴡʜᴀᴛ ʏᴏᴜ ʟᴏᴠᴇ! 🩷</p>
+          <p class="hero-line yellow-line">🌻 𝐋𝐞𝐭'𝐬 𝐠𝐫𝐨𝐰 𝐭𝐨𝐠𝐞𝐭𝐡𝐞𝐫! 💛</p>
+        </div>
+      </div>
 
-    <h1 class="store-name">
-        𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
-    </h1>
+      <div id="adminPreviewBar" class="admin-preview-bar glass" hidden>
+        <span>🔐 คุณอยู่ใน Admin Mode</span>
+        <button id="backToAdminBtn" class="small">⚙️ กลับ Admin</button>
+      </div>
 
-    <p class="hero-line blue-line">
-        🩵 ꜱᴛᴀʀᴛ ʏᴏᴜʀ ᴅᴀʏ ʀɪɢʜᴛ
-        ᴡɪᴛʜ ᴡʜᴀᴛ ʏᴏᴜ ʟᴏᴠᴇ! 🩷
-    </p>
-
-    <p class="hero-line yellow-line">
-        🌻 𝐋𝐞𝐭'𝐬 𝐠𝐫𝐨𝐰 𝐭𝐨𝐠𝐞𝐭𝐡𝐞𝐫! 💛
-    </p>
-
-</div>
-      <div class="section-head"><h2>🔥 สินค้าทั้งหมด</h2><input id="search" placeholder="ค้นหาสินค้า..." /></div>
+      <div class="section-head">
+        <div><span class="section-label">PREMIUM APPS</span><h2>🔥 สินค้าทั้งหมด</h2></div>
+        <input id="search" placeholder="ค้นหาสินค้า..." />
+      </div>
       <div id="productGrid" class="product-grid"></div>
+
+      <section id="recommendationSection" class="recommendation-section">
+        <div class="section-head simple-head">
+          <div><span class="section-label">WHAT TO WATCH</span><h2>🎬 น่าดู / แนะนำ</h2></div>
+        </div>
+        <div id="recommendationGrid" class="recommendation-grid"></div>
+      </section>
     </section>
 
     <section id="detailView" class="view">
@@ -67,18 +61,26 @@
     </section>
 
     <section id="promoView" class="view">
-      <div class="section-head"><h2>🎁 โปรโมชั่น & Combo</h2></div>
+      <div class="section-head"><div><span class="section-label">SPECIAL DEALS</span><h2>🎁 โปรโมชั่น & Combo</h2></div></div>
       <div id="promotionGrid" class="promo-grid"></div>
     </section>
 
     <section id="contactView" class="view">
-      <div class="glass info-card"><h2>🌻🐰 Heybaragise</h2><p>เลือกช่องทางติดต่อหรือสั่งซื้อผ่านลิงก์ที่ร้านกำหนด</p></div>
+      <div class="glass info-card contact-card">
+        <span class="section-label">CONTACT</span>
+        <h2>🌻 ช่องทางติดต่อ Heybaragise</h2>
+        <p>กดไอคอนด้านล่างเพื่อไปยังช่องทางของร้าน</p>
+        <div id="contactSocialLinks" class="social-links contact-social-links"></div>
+      </div>
     </section>
 
     <section id="adminView" class="view">
       <div class="admin-head">
         <div><span class="badge">🔐 Admin Mode</span><h2>จัดการร้าน</h2></div>
-        <button id="logoutBtn" class="ghost">ออกจากระบบ</button>
+        <div class="admin-head-actions">
+          <button id="previewStoreBtn" class="ghost">👁️ ดูหน้าร้าน</button>
+          <button id="logoutBtn" class="ghost">ออกจากระบบ</button>
+        </div>
       </div>
 
       <div class="admin-tabs">
@@ -86,7 +88,7 @@
         <button class="tab" data-admin-tab="promotions">โปรโมชั่น</button>
         <button class="tab" data-admin-tab="combos">Combo</button>
         <button class="tab" data-admin-tab="social">ติดต่อ</button>
-        <button class="tab" data-admin-tab="settings">พื้นหลัง & ธีม</button>
+        <button class="tab" data-admin-tab="theme">พื้นหลัง & ธีม</button>
       </div>
 
       <div id="adminProducts" class="admin-panel active">
@@ -95,7 +97,7 @@
       </div>
 
       <div id="adminPromotions" class="admin-panel">
-        <button id="addPromoBtn" class="primary">＋ เพิ่มโปรโมชั่น</button>
+        <button id="addPromoBtn" class="primary">＋ เพิ่มโปรโมชั่น / ซีรีส์แนะนำ</button>
         <div id="adminPromoList" class="admin-list"></div>
       </div>
 
@@ -105,53 +107,34 @@
       </div>
 
       <div id="adminSocial" class="admin-panel">
-        <div class="panel-intro">
+        <div class="panel-intro glass">
           <h3>🌐 ช่องทางติดต่อ</h3>
-          <p>เพิ่ม Instagram, X, LINE หรือช่องทางอื่น พร้อมรูปโลโก้และลิงก์ภายนอก</p>
+          <p>เพิ่ม Instagram, X, LINE หรือช่องทางอื่นได้ และกำหนดรูปโลโก้กับลิงก์ได้เอง</p>
         </div>
         <button id="addSocialBtn" class="primary">＋ เพิ่มช่องทางติดต่อ</button>
         <div id="adminSocialList" class="admin-list"></div>
       </div>
 
-      <div id="adminSettings" class="admin-panel">
-        <div class="panel-intro">
+      <div id="adminTheme" class="admin-panel">
+        <div class="panel-intro glass">
           <h3>🖼️ พื้นหลัง & ธีม</h3>
-          <p>อัปโหลดรูปพื้นหลัง ปรับสีเอง หรือให้ระบบเลือกสีพาสเทลจากรูปให้อัตโนมัติ</p>
+          <p>อัปโหลดรูปพื้นหลังได้ และเลือกให้ระบบสร้างสีธีมจากรูปอัตโนมัติ</p>
         </div>
-
-        <div class="settings-grid">
-          <div class="settings-preview glass">
-            <div class="settings-preview-label">Preview</div>
-            <div id="backgroundPreview" class="background-preview">
-              <span>ใช้ธีมเริ่มต้นฟ้า × ชมพู</span>
-            </div>
+        <div class="theme-preview glass">
+          <div id="themePreview" class="theme-preview-image">ยังไม่มีรูปพื้นหลัง</div>
+          <div class="theme-preview-controls">
+            <label>สีหลัก <input id="themeAccent" type="color" value="#9ed8f5"></label>
+            <label>สีรอง <input id="themeSecondary" type="color" value="#f6b6d1"></label>
           </div>
-
-          <form id="siteSettingsForm" class="glass settings-form">
-            <label>รูปพื้นหลัง
-              <input id="backgroundImage" type="file" accept="image/*" />
-            </label>
-
-            <label class="check">
-              <input id="autoTheme" type="checkbox" checked />
-              ปรับสีธีมจากรูปอัตโนมัติ
-            </label>
-
-            <div class="color-pair">
-              <label>สีหลัก
-                <input id="accentColor" type="color" value="#9ed8f5" />
-              </label>
-              <label>สีรอง
-                <input id="secondaryColor" type="color" value="#f6b6d1" />
-              </label>
-            </div>
-
-            <button class="primary" type="submit">บันทึกพื้นหลังและธีม</button>
-            <button id="removeBackgroundBtn" type="button" class="small danger">
-              🗑 ลบรูปพื้นหลัง / กลับธีมเริ่มต้น
-            </button>
-          </form>
         </div>
+        <form id="themeForm" class="glass settings-form">
+          <label>รูปพื้นหลัง <input id="backgroundImage" type="file" accept="image/*"></label>
+          <label class="check"><input id="autoTheme" type="checkbox" checked> สร้างสีธีมจากรูปอัตโนมัติ</label>
+          <div class="form-actions">
+            <button class="primary" type="submit">บันทึกพื้นหลัง & ธีม</button>
+            <button id="removeBackgroundBtn" class="small danger" type="button">🗑 ลบรูปพื้นหลัง / กลับธีมเริ่มต้น</button>
+          </div>
+        </form>
       </div>
     </section>
   </main>
@@ -188,42 +171,23 @@
     </form>
   </dialog>
 
-  <dialog id="promoDialog" class="modal glass">
+  <dialog id="promoDialog" class="modal glass wide">
     <button class="close" data-close="promoDialog">×</button>
     <h2 id="promoFormTitle">เพิ่มโปรโมชั่น</h2>
     <form id="promoForm">
       <input type="hidden" id="promoId" />
+      <label>ประเภท<select id="promoCategory"><option value="promotion">🎁 โปรโมชั่น</option><option value="recommended">🎬 น่าดู / แนะนำ</option></select></label>
       <label>สินค้า<select id="promoProduct"></select></label>
-      <label>ประเภท
-        <select id="promoCategory">
-          <option value="promotion">🎁 โปรโมชั่น</option>
-          <option value="recommended">🎬 น่าดู / แนะนำ</option>
-        </select>
-      </label>
-      <label>ชื่อโปรโมชั่น / ชื่อเรื่อง<input id="promoTitle" required /></label>
+      <label>ชื่อเรื่อง / โปรโมชั่น<input id="promoTitle" required /></label>
       <label>รายละเอียด<textarea id="promoDescription"></textarea></label>
-      <label>รูปโปรโมท/Poster<input id="promoImage" type="file" accept="image/*" /></label>
+      <label>รูปโปรโมท / Poster<input id="promoImage" type="file" accept="image/*" /></label>
       <label>ลิงก์ภายนอก<input id="promoLink" type="url" placeholder="https://..." /></label>
       <label class="check"><input id="promoActive" type="checkbox" checked /> เปิดแสดง</label>
-      <button class="primary" type="submit">บันทึกโปรโมชั่น</button>
+      <button class="primary" type="submit">บันทึก</button>
     </form>
   </dialog>
 
-  <dialog id="socialDialog" class="modal glass">
-    <button class="close" data-close="socialDialog">×</button>
-    <h2 id="socialFormTitle">เพิ่มช่องทางติดต่อ</h2>
-    <form id="socialForm">
-      <input type="hidden" id="socialId" />
-      <label>ชื่อช่องทาง<input id="socialName" required placeholder="Instagram" /></label>
-      <label>ลิงก์ภายนอก<input id="socialLink" type="url" required placeholder="https://..." /></label>
-      <label>รูปโลโก้<input id="socialImage" type="file" accept="image/*" /></label>
-      <label>ลำดับการแสดง<input id="socialOrder" type="number" min="0" value="0" /></label>
-      <label class="check"><input id="socialActive" type="checkbox" checked /> แสดงบนหน้าร้าน</label>
-      <button class="primary" type="submit">บันทึกช่องทาง</button>
-    </form>
-  </dialog>
-
-  <dialog id="comboDialog" class="modal glass">
+  <dialog id="comboDialog" class="modal glass wide">
     <button class="close" data-close="comboDialog">×</button>
     <h2 id="comboFormTitle">สร้าง Combo</h2>
     <form id="comboForm">
@@ -236,6 +200,21 @@
       <label>ลิงก์สั่งซื้อ<input id="comboLink" type="url" placeholder="https://..." /></label>
       <label class="check"><input id="comboActive" type="checkbox" checked /> เปิดแสดง</label>
       <button class="primary" type="submit">บันทึก Combo</button>
+    </form>
+  </dialog>
+
+  <dialog id="socialDialog" class="modal glass">
+    <button class="close" data-close="socialDialog">×</button>
+    <h2 id="socialFormTitle">เพิ่มช่องทางติดต่อ</h2>
+    <form id="socialForm">
+      <input type="hidden" id="socialId" />
+      <label>ชื่อช่องทาง<input id="socialName" required placeholder="Instagram / X / LINE" /></label>
+      <label>รูปโลโก้<input id="socialImage" type="file" accept="image/*" /></label>
+      <div id="socialImagePreview" class="image-preview">ยังไม่มีรูปใหม่</div>
+      <label>ลิงก์ภายนอก<input id="socialUrl" type="url" required placeholder="https://..." /></label>
+      <label>ลำดับการแสดง<input id="socialOrder" type="number" min="0" value="0" /></label>
+      <label class="check"><input id="socialActive" type="checkbox" checked /> แสดงบนหน้าร้าน</label>
+      <button class="primary" type="submit">บันทึกช่องทาง</button>
     </form>
   </dialog>
 
