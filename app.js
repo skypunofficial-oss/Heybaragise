@@ -864,13 +864,21 @@ function renderAdmin() {
   const comboList = $("#adminComboList");
 
   if (productList) {
+    const sortedProducts = [...state.adminProducts].sort((a, b) => {
+      const ao = Number(a.sort_order ?? 0);
+      const bo = Number(b.sort_order ?? 0);
+      if (ao !== bo) return ao - bo;
+      return String(a.name || "").localeCompare(String(b.name || ""), "th");
+    });
+
     productList.innerHTML =
-      state.adminProducts.map((product) =>
+      sortedProducts.map((product, index) =>
         adminRow(
           `${escapeHtml(product.icon || "📱")} ${mixedText(product.name)}`,
           product.active,
           `editProduct('${product.id}')`,
-          `deleteProduct('${product.id}')`
+          `deleteProduct('${product.id}')`,
+          `• ลำดับ ${index + 1}`
         )
       ).join("") || `<div class="empty">ไม่มีสินค้า</div>`;
   }
@@ -975,6 +983,10 @@ function resetProductForm() {
 
   if ($("#productId")) $("#productId").value = "";
   if ($("#packageRows")) $("#packageRows").innerHTML = "";
+  if ($("#pCurrentImage")) $("#pCurrentImage").hidden = true;
+
+  const nextOrder = state.adminProducts.length + 1;
+  if ($("#pSortOrder")) $("#pSortOrder").value = nextOrder;
 
   packageRow();
   if ($("#productFormTitle")) $("#productFormTitle").textContent = "เพิ่มสินค้า";
@@ -994,6 +1006,19 @@ window.editProduct = (id) => {
   $("#pLink").value = product.external_url || "";
   $("#pActive").checked = !!product.active;
 
+  const sortedForPosition = [...state.adminProducts].sort((a, b) => {
+    const ao = Number(a.sort_order ?? 0);
+    const bo = Number(b.sort_order ?? 0);
+    if (ao !== bo) return ao - bo;
+    return String(a.name || "").localeCompare(String(b.name || ""), "th");
+  });
+  const currentPosition = sortedForPosition.findIndex((item) => item.id === product.id) + 1;
+  $("#pSortOrder").value = currentPosition > 0 ? currentPosition : 1;
+
+  if ($("#pCurrentImage")) {
+    $("#pCurrentImage").hidden = !product.image_url;
+  }
+
   $("#packageRows").innerHTML = "";
   (product.packages || []).forEach(packageRow);
 
@@ -1007,12 +1032,20 @@ $("#productForm")?.addEventListener("submit", async (event) => {
   try {
     const id = $("#productId").value;
     const file = $("#pImage").files[0];
+    const currentProduct = id
+      ? state.adminProducts.find((item) => item.id === id)
+      : null;
 
     let imageUrl = null;
 
     if (file) {
       imageUrl = await uploadImage(file, "products");
     }
+
+    const requestedOrder = Math.max(
+      1,
+      Number($("#pSortOrder").value || state.adminProducts.length + 1)
+    );
 
     const payload = {
       name: $("#pName").value.trim(),
@@ -1027,6 +1060,8 @@ $("#productForm")?.addEventListener("submit", async (event) => {
       throw new Error("ลิงก์สินค้าต้องเป็น http:// หรือ https://");
     }
 
+    // If no new image is selected while editing, image_url is intentionally
+    // omitted so Supabase keeps the existing image URL.
     if (imageUrl) payload.image_url = imageUrl;
 
     let productId = id;
@@ -1043,7 +1078,7 @@ $("#productForm")?.addEventListener("submit", async (event) => {
     } else {
       const result = await sb
         .from("products")
-        .insert(payload)
+        .insert({ ...payload, sort_order: requestedOrder })
         .select()
         .single();
 
@@ -1051,6 +1086,8 @@ $("#productForm")?.addEventListener("submit", async (event) => {
 
       productId = result.data.id;
     }
+
+    await setProductOrder(productId, requestedOrder);
 
     const packages = $$(".package-row")
       .map((row) => ({
@@ -1074,6 +1111,36 @@ $("#productForm")?.addEventListener("submit", async (event) => {
   }
 });
 
+async function setProductOrder(productId, requestedPosition) {
+  const result = await sb
+    .from("products")
+    .select("id, sort_order, name, created_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (result.error) throw result.error;
+
+  const items = [...(result.data || [])];
+  const currentIndex = items.findIndex((item) => item.id === productId);
+  if (currentIndex < 0) return;
+
+  const [current] = items.splice(currentIndex, 1);
+  const targetIndex = Math.min(
+    Math.max(Number(requestedPosition || 1) - 1, 0),
+    items.length
+  );
+  items.splice(targetIndex, 0, current);
+
+  for (let index = 0; index < items.length; index += 1) {
+    const updateResult = await sb
+      .from("products")
+      .update({ sort_order: index + 1 })
+      .eq("id", items[index].id);
+
+    if (updateResult.error) throw updateResult.error;
+  }
+}
+
 window.deleteProduct = async (id) => {
   if (!confirm("ลบสินค้านี้?")) return;
 
@@ -1085,6 +1152,19 @@ window.deleteProduct = async (id) => {
   if (result.error) {
     toast(result.error.message);
     return;
+  }
+
+  // Close gaps so the remaining products keep a clean 1,2,3... order.
+  const remaining = await sb
+    .from("products")
+    .select("id")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (!remaining.error) {
+    for (let index = 0; index < (remaining.data || []).length; index += 1) {
+      await sb.from("products").update({ sort_order: index + 1 }).eq("id", remaining.data[index].id);
+    }
   }
 
   await refreshAll();
