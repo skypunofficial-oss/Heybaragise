@@ -289,7 +289,11 @@ nav button:hover { background: rgba(255,255,255,.58); color: #ec7fae; }
   border-bottom: 1px solid rgba(255,255,255,.45);
 }
 .card-body { padding: 18px; }
-.product-icon { font-size: 20px; line-height: 1; margin-bottom: 4px; }
+.product-icon {
+  font-size: 12px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
 .card-body h3 { margin: 7px 0; color: #596b86; font-size: 22px; line-height: 1.25; }
 .card-body p {
   margin: 0;
@@ -707,7 +711,11 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
     object-fit: cover;
   }
   .card-body { padding: 13px; }
-  .product-icon { font-size: 18px; line-height: 1; margin-bottom: 3px; }
+  .product-icon {
+    font-size: 12px;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
   .card-body h3 { font-size: 21px; line-height: 1.3; margin: 6px 0 8px; }
   .card-body p { font-size: 13px; line-height: 1.65; }
 
