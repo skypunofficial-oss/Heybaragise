@@ -1076,9 +1076,17 @@ $("#productForm")?.addEventListener("submit", async (event) => {
 
       await sb.from("packages").delete().eq("product_id", id);
     } else {
+      // Insert at a temporary order first. This avoids collisions with existing
+      // sort_order values before we normalize the final positions.
+      const maxExistingOrder = Math.max(
+        0,
+        ...state.adminProducts.map((item) => Number(item.sort_order || 0))
+      );
+      const temporaryOrder = maxExistingOrder + state.adminProducts.length + 1000;
+
       const result = await sb
         .from("products")
-        .insert({ ...payload, sort_order: requestedOrder })
+        .insert({ ...payload, sort_order: temporaryOrder })
         .select()
         .single();
 
@@ -1114,7 +1122,7 @@ $("#productForm")?.addEventListener("submit", async (event) => {
 async function setProductOrder(productId, requestedPosition) {
   const result = await sb
     .from("products")
-    .select("id, sort_order, name, created_at")
+    .select("id, sort_order, created_at")
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
 
@@ -1131,13 +1139,27 @@ async function setProductOrder(productId, requestedPosition) {
   );
   items.splice(targetIndex, 0, current);
 
+  // Phase 1: move every row to unique temporary values above the current max.
+  // This works even when sort_order has a UNIQUE constraint and prevents
+  // duplicate-key errors while swapping positions.
+  const maxOrder = Math.max(0, ...items.map((item) => Number(item.sort_order || 0)));
+  const tempBase = maxOrder + items.length + 1000;
+
   for (let index = 0; index < items.length; index += 1) {
-    const updateResult = await sb
+    const tempResult = await sb
+      .from("products")
+      .update({ sort_order: tempBase + index })
+      .eq("id", items[index].id);
+    if (tempResult.error) throw tempResult.error;
+  }
+
+  // Phase 2: normalize to 1,2,3,...
+  for (let index = 0; index < items.length; index += 1) {
+    const finalResult = await sb
       .from("products")
       .update({ sort_order: index + 1 })
       .eq("id", items[index].id);
-
-    if (updateResult.error) throw updateResult.error;
+    if (finalResult.error) throw finalResult.error;
   }
 }
 
