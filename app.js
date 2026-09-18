@@ -102,6 +102,9 @@ function showView(id) {
   target.hidden = false;
   target.classList.add("active");
 
+  const footer = $("#siteFooter");
+  if (footer) footer.hidden = id === "admin";
+
   window.scrollTo({
     top: 0,
     behavior: "smooth"
@@ -1573,6 +1576,10 @@ async function refreshAll() {
 // =========================================================
 
 async function init() {
+  // Always start in the customer storefront. Admin is opened only after
+  // the hidden 5-click brand gesture and successful admin authorization.
+  showView("home");
+
   try {
     await Promise.all([
       loadSiteSettings(),
