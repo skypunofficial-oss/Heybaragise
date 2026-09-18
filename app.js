@@ -94,7 +94,12 @@ function showView(id) {
   const target = $("#" + id + "View");
   if (!target) return;
 
-  $$(".view").forEach((view) => view.classList.remove("active"));
+  $$(".view").forEach((view) => {
+    view.classList.remove("active");
+    view.hidden = true;
+  });
+
+  target.hidden = false;
   target.classList.add("active");
 
   window.scrollTo({
