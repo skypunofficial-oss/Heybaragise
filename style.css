@@ -52,6 +52,13 @@ body {
   background-attachment: fixed;
   transition: background .35s ease;
 }
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
 
 button,
 input,
