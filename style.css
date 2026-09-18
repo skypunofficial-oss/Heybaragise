@@ -778,3 +778,15 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
   display: none !important;
 }
 
+
+/* PRODUCT FORM - KEEP OLD IMAGE + MANUAL DISPLAY ORDER */
+.current-image-note {
+  margin-top: -4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(158,216,245,.16);
+  border: 1px solid rgba(255,255,255,.55);
+  color: #718098;
+  font-size: 13px;
+}
+
