@@ -158,7 +158,7 @@ async function loadAll() {
 
       sb
         .from("combos")
-        .select("*, combo_items(product_id, products(id,name,icon))")
+        .select("*, combo_items(product_id, products(id,name,icon,image_url))")
         .eq("active", true)
         .order("created_at", { ascending: false })
     ]);
@@ -171,8 +171,67 @@ async function loadAll() {
   state.promotions = promotionsResult.data || [];
   state.combos = combosResult.data || [];
 
+  renderCombosHome();
   renderProducts();
   renderPromotions();
+}
+
+function comboImageHtml(combo, className = "combo-image-grid") {
+  const items = (combo.combo_items || []).filter((item) => item.products);
+  const imageItems = items.filter((item) => item.products.image_url);
+
+  if (!imageItems.length) {
+    return `<div class="${className} combo-image-fallback count-${Math.min(items.length, 4)}">${items
+      .slice(0, 4)
+      .map((item) => `<span>${escapeHtml(item.products?.icon || "📱")}</span>`)
+      .join("")}</div>`;
+  }
+
+  return `<div class="${className} count-${Math.min(imageItems.length, 4)}">${imageItems
+    .slice(0, 4)
+    .map((item) => `<img src="${escapeHtml(item.products.image_url)}" alt="${escapeHtml(item.products.name || "สินค้า")}" loading="lazy">`)
+    .join("")}</div>`;
+}
+
+function renderCombosHome() {
+  const section = $("#comboHomeSection");
+  const grid = $("#comboHomeGrid");
+  if (!section || !grid) return;
+
+  const combos = state.combos.filter((combo) => combo.active !== false);
+  section.hidden = !combos.length;
+
+  if (!combos.length) {
+    grid.innerHTML = "";
+    return;
+  }
+
+  grid.innerHTML = combos.map((combo) => `
+    <article class="combo-card glass" data-combo-link="${escapeHtml(combo.external_url || "")}">
+      ${comboImageHtml(combo)}
+      <div class="card-body">
+        <span class="badge">🤝 Combo Deal</span>
+        <h3>${mixedText(combo.name)}</h3>
+        ${combo.description ? `<p>${mixedText(combo.description)}</p>` : ""}
+        <p class="combo-products">${(combo.combo_items || []).map((item) =>
+          `${escapeHtml(item.products?.name || "")}`
+        ).filter(Boolean).join(" + ")}</p>
+        <div class="combo-price-row">
+          ${combo.original_price ? `<span class="price-old">฿${money(combo.original_price)}</span>` : ""}
+          <span class="price-sale">฿${money(combo.sale_price)}</span>
+        </div>
+        ${combo.external_url ? `<span class="arrow">→</span>` : ""}
+      </div>
+    </article>
+  `).join("");
+
+  $$("#comboHomeGrid .combo-card").forEach((card) => {
+    const link = card.dataset.comboLink;
+    if (!link) return;
+    card.addEventListener("click", () => {
+      window.open(link, "_blank", "noopener,noreferrer");
+    });
+  });
 }
 
 function renderProducts(list = state.products) {
@@ -248,29 +307,15 @@ function renderPromotions() {
 
   const comboHtml = state.combos.map((combo) => `
     <article class="promo-card glass">
+      ${comboImageHtml(combo, "combo-image-grid promo-combo-image")}
       <div class="card-body">
         <span class="badge">🤝 Combo Deal</span>
         <h3>${mixedText(combo.name)}</h3>
         <p>${mixedText(combo.description || "")}</p>
-        <p>
-          ${(combo.combo_items || []).map((item) =>
-            `${escapeHtml(item.products?.icon || "📱")} ${mixedText(item.products?.name || "")}`
-          ).join(" + ")}
-        </p>
-        ${
-          combo.original_price
-            ? `<span class="price-old">฿${money(combo.original_price)}</span>`
-            : ""
-        }
+        <p>${(combo.combo_items || []).map((item) => mixedText(item.products?.name || "")).filter(Boolean).join(" + ")}</p>
+        ${combo.original_price ? `<span class="price-old">฿${money(combo.original_price)}</span>` : ""}
         <div class="price-sale">฿${money(combo.sale_price)}</div>
-        ${
-          combo.external_url
-            ? `<a class="external-link"
-                  href="${escapeHtml(combo.external_url)}"
-                  target="_blank"
-                  rel="noopener noreferrer">รับโปรโมชั่น ↗</a>`
-            : ""
-        }
+        ${combo.external_url ? `<a class="external-link" href="${escapeHtml(combo.external_url)}" target="_blank" rel="noopener noreferrer">รับโปรโมชั่น ↗</a>` : ""}
       </div>
     </article>
   `).join("");
