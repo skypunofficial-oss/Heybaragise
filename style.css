@@ -1113,3 +1113,26 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
     gap: 11px;
   }
 }
+
+
+/* v63 — Store name: force the uploaded Yuntaeng font, normal style */
+.store-name,
+.store-name.font-en {
+  font-family: "OngleipYuntaeng", sans-serif !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+/* v63 — Home Combo section */
+.home-combo-section {
+  display: block;
+  margin: 18px 0 28px;
+}
+.home-combo-section[hidden] {
+  display: none !important;
+}
+.home-combo-section .combo-home-head {
+  margin-bottom: 10px;
+}
