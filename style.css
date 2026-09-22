@@ -797,3 +797,92 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
   color: #718098;
   font-size: 13px;
 }
+
+/* =========================================================
+   HEYBARAGISE v60 — COMBO MOBILE SIZE FIX
+   Keep Combo cards visually consistent with Products.
+========================================================= */
+
+/* Generic Combo containers */
+.combo-grid,
+.combos-grid,
+#comboGrid,
+#combosGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+/* Combo cards */
+.combo-card,
+.combos-card {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+/* Combo images: square, contained inside the card */
+.combo-image,
+.combos-image,
+.combo-card img,
+.combos-card img,
+.combo-grid img,
+.combos-grid img,
+#comboGrid img,
+#combosGrid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  max-width: 100%;
+}
+
+/* If Combo is currently rendered with the existing promo classes */
+#promotionGrid .promo-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+#promotionGrid .promo-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .combo-grid,
+  .combos-grid,
+  #comboGrid,
+  #combosGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .combo-card,
+  .combos-card {
+    border-radius: 20px;
+  }
+
+  .combo-image,
+  .combos-image,
+  .combo-card img,
+  .combos-card img,
+  .combo-grid img,
+  .combos-grid img,
+  #comboGrid img,
+  #combosGrid img,
+  #promotionGrid .promo-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  #promotionGrid .promo-card .card-body {
+    padding: 13px;
+  }
+}
