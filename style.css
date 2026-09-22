@@ -1,326 +1,799 @@
-<!doctype html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#dff6ff">
-  <meta name="description" content="Heybaragise 🌻🐰 Premium Apps">
-  <title>Heybaragise 🌻🐰 | Premium Apps</title>
+/* =========================================================
+   HEYBARAGISE
+   Pastel Blue × Pink Glassmorphism
+   Thai: LKKaohom / English + Korean: Ongleip Yuntaeng
+========================================================= */
 
-  <link rel="stylesheet" href="style.css?v=59">
-</head>
+@font-face {
+  font-family: "LKKaohom";
+  src: url("fonts/LKKaohom-Freecomm.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
-<body>
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
+@font-face {
+  font-family: "OngleipYuntaeng";
+  src: url("fonts/Ongleip_Yuntaeng.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
-  <header class="glass header">
-    <div class="header-brand-area">
-      <button id="brand" class="brand" type="button" aria-label="Heybaragise">
-        𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
-      </button>
+:root {
+  --accent-color: #9ed8f5;
+  --secondary-color: #f6b6d1;
+  --background-color: #eef8ff;
+  --text-color: #53627a;
+  --muted-color: #7f8ca0;
+  --glass-white: rgba(255,255,255,.48);
+  --glass-white-soft: rgba(255,255,255,.22);
+  --glass-border: rgba(255,255,255,.68);
+}
 
-      <div id="socialLinks" class="social-links" aria-label="ช่องทางติดต่อ"></div>
-    </div>
+* { box-sizing: border-box; }
 
-    <nav>
-      <button type="button" data-view="home">สินค้า</button>
-      <button type="button" data-view="promo">โปรโมชั่น</button>
-      <button type="button" data-view="contact">ติดต่อ</button>
-    </nav>
-  </header>
+html { scroll-behavior: smooth; }
 
-  <main class="container">
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "LKKaohom", sans-serif;
+  color: var(--text-color);
+  overflow-x: hidden;
+  background:
+    linear-gradient(135deg,
+      var(--background-color) 0%,
+      #dce9ff 34%,
+      #f2e5ff 67%,
+      #ffe5f1 100%);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: background .35s ease;
+}
 
-    <!-- CUSTOMER HOME -->
-    <section id="homeView" class="view active">
+button,
+input,
+textarea,
+select,
+label,
+h1,h2,h3,h4,h5,h6 {
+  font-family: "LKKaohom", sans-serif;
+}
 
-      <div class="hero glass">
-        <h1 class="store-name">𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒</h1>
+.font-en {
+  font-family: "OngleipYuntaeng", sans-serif;
+  font-weight: normal;
+}
 
-        <p class="hero-line blue-line">
-          🩵 <span class="font-en">START YOUR DAY RIGHT WITH WHAT YOU LOVE!</span> 🩷
-        </p>
+button,
+a { -webkit-tap-highlight-color: transparent; }
 
-        <p class="hero-line yellow-line">
-          🌻 <span class="font-en">Let's grow together!</span> 💛
-        </p>
-      </div>
+button { cursor: pointer; }
 
-      <section id="comboHomeSection" class="combo-home-section" hidden>
-        <div class="section-title-row">
-          <div>
-            <span class="section-label font-en">SPECIAL COMBO</span>
-            <h2>🤝 Combo พิเศษ</h2>
-          </div>
-        </div>
-        <div id="comboHomeGrid" class="combo-grid"></div>
-      </section>
+.orb {
+  position: fixed;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  filter: blur(95px);
+  pointer-events: none;
+  z-index: -1;
+}
+.orb1 { top: -80px; left: -100px; background: rgba(145,218,255,.58); }
+.orb2 { right: -120px; bottom: -100px; background: rgba(255,183,216,.56); }
 
-      <div class="section-head">
-        <div>
-          <span class="section-label font-en">PREMIUM APPS</span>
-          <h2>🔥 สินค้าทั้งหมด</h2>
-        </div>
-        <input id="search" type="search" placeholder="ค้นหาสินค้า..." autocomplete="off">
-      </div>
+.glass {
+  position: relative;
+  background: linear-gradient(135deg, var(--glass-white), var(--glass-white-soft));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 12px 40px rgba(116,153,190,.13);
+}
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255,255,255,.24), transparent 35%);
+  pointer-events: none;
+}
 
-      <div id="productGrid" class="product-grid"></div>
+.header {
+  width: min(1280px, calc(100% - 32px));
+  margin: 18px auto;
+  padding: 12px 18px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  position: sticky;
+  top: 10px;
+  z-index: 20;
+}
 
-      <section id="recommendedSection" class="recommended-section" hidden>
-        <div class="section-title-row">
-          <div>
-            <span class="section-label font-en">WATCH &amp; RECOMMEND</span>
-            <h2>🎬 น่าดู / แนะนำ</h2>
-          </div>
-        </div>
-        <div id="recommendedGrid" class="recommended-grid"></div>
-      </section>
+.header-brand-area {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-    </section>
+.brand {
+  border: 0;
+  background: transparent;
+  color: #52647e;
+  font-size: 22px;
+  padding: 4px;
+  white-space: nowrap;
+}
 
-    <!-- PRODUCT DETAIL -->
-    <section id="detailView" class="view" hidden>
-      <button type="button" class="back" data-view="home">← กลับหน้าสินค้า</button>
-      <div id="productDetail"></div>
-    </section>
+.social-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
 
-    <!-- PROMOTIONS -->
-    <section id="promoView" class="view" hidden>
-      <div class="section-head">
-        <div>
-          <span class="section-label font-en">SPECIAL OFFERS</span>
-          <h2>🎁 โปรโมชั่น &amp; Combo</h2>
-        </div>
-      </div>
-      <div id="promotionGrid" class="promo-grid"></div>
-    </section>
+.social-link {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,.30);
+  border: 1px solid rgba(255,255,255,.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform .22s ease, background .22s ease;
+  overflow: hidden;
+  text-decoration: none;
+}
+.social-link:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: rgba(255,255,255,.55);
+}
+.social-link img {
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
+  display: block;
+}
 
-    <!-- CONTACT -->
-    <section id="contactView" class="view" hidden>
-      <div class="glass info-card contact-card">
-        <span class="section-label font-en">CONTACT</span>
-        <h2>🌻 ช่องทางติดต่อ</h2>
-        <p>กดไอคอนด้านบนเพื่อออกไปยังช่องทางภายนอกของร้าน</p>
-        <div id="contactGrid" class="contact-grid"></div>
-      </div>
-    </section>
+nav { display: flex; gap: 6px; }
+nav button {
+  border: 0;
+  background: rgba(255,255,255,.25);
+  color: #63718a;
+  padding: 9px 14px;
+  border-radius: 12px;
+}
+nav button:hover { background: rgba(255,255,255,.58); color: #ec7fae; }
 
-    <!-- ADMIN -->
-    <section id="adminView" class="view" hidden>
-      <div class="admin-head">
-        <div>
-          <span class="badge">🔐 Admin Mode</span>
-          <h2>จัดการร้าน</h2>
-        </div>
-        <div class="admin-head-actions">
-          <button id="previewStoreBtn" type="button" class="ghost">👁️ ดูหน้าร้าน</button>
-          <button id="logoutBtn" type="button" class="ghost">ออกจากระบบ</button>
-        </div>
-      </div>
+.container {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 8px 0 35px;
+}
 
-      <div class="admin-tabs">
-        <button type="button" class="tab active" data-admin-tab="products">สินค้า</button>
-        <button type="button" class="tab" data-admin-tab="promotions">โปรโมชั่น</button>
-        <button type="button" class="tab" data-admin-tab="combos">Combo</button>
-        <button type="button" class="tab" data-admin-tab="recommended">🎬 น่าดู / แนะนำ</button>
-        <button type="button" class="tab" data-admin-tab="social">ติดต่อ</button>
-        <button type="button" class="tab" data-admin-tab="theme">พื้นหลัง &amp; ธีม</button>
-      </div>
+.view { display: none; animation: fadeUp .3s ease; }
+.view.active { display: block; }
+.view[hidden] { display: none !important; }
+#siteFooter[hidden] { display: none !important; }
 
-      <div id="adminProducts" class="admin-panel active">
-        <button id="addProductBtn" type="button" class="primary">＋ เพิ่มสินค้า</button>
-        <div id="adminProductList" class="admin-list"></div>
-      </div>
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-      <div id="adminPromotions" class="admin-panel">
-        <button id="addPromoBtn" type="button" class="primary">＋ เพิ่มโปรโมชั่น</button>
-        <div id="adminPromoList" class="admin-list"></div>
-      </div>
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 24px 18px;
+  border-radius: 30px;
+  margin-bottom: 24px;
+}
 
-      <div id="adminCombos" class="admin-panel">
-        <button id="addComboBtn" type="button" class="primary">＋ สร้าง Combo ลดราคา</button>
-        <div id="adminComboList" class="admin-list"></div>
-      </div>
+.store-name {
+  margin: 0 0 8px;
+  color: #596b86;
+  font-size: clamp(30px, 6vw, 58px);
+  line-height: 1.15;
+  white-space: nowrap;
+}
 
-      <div id="adminRecommended" class="admin-panel">
-        <div class="panel-intro">
-          <h3>🎬 น่าดู / แนะนำ</h3>
-          <p>เพิ่มได้หลายเรื่อง พร้อมรูป รายละเอียด และลิงก์ภายนอก</p>
-        </div>
-        <button id="addRecommendedBtn" type="button" class="primary">＋ เพิ่มเรื่องแนะนำ</button>
-        <div id="adminRecommendedList" class="admin-list"></div>
-      </div>
+.hero-line {
+  display: block;
+  width: 100%;
+  margin: 7px auto;
+  text-align: center;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
 
-      <div id="adminSocial" class="admin-panel">
-        <div class="panel-intro">
-          <h3>🌐 ช่องทางติดต่อ</h3>
-          <p>เพิ่ม Instagram, X, LINE หรือช่องทางอื่นได้</p>
-        </div>
-        <button id="addSocialBtn" type="button" class="primary">＋ เพิ่มช่องทางติดต่อ</button>
-        <div id="adminSocialList" class="admin-list"></div>
-      </div>
+.blue-line {
+  color: #5f91b7;
+  font-size: clamp(10px, 2.9vw, 18px);
+}
+.yellow-line {
+  color: #c28a42;
+  font-size: clamp(14px, 3.5vw, 21px);
+}
 
-      <div id="adminTheme" class="admin-panel">
-        <div class="panel-intro">
-          <h3>🖼️ พื้นหลัง &amp; ธีม</h3>
-          <p>อัปโหลดพื้นหลังและกำหนดสีธีมของร้านได้</p>
-        </div>
+/* SECTIONS */
+.section-head,
+.section-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 18px 0;
+}
+.section-head h2,
+.section-title-row h2 {
+  margin: 4px 0 0;
+  color: #596b86;
+}
+.section-label {
+  display: block;
+  color: #8793a6;
+  font-size: 13px;
+  letter-spacing: .8px;
+}
 
-        <div class="theme-editor glass">
-          <div class="background-preview-wrap">
-            <div id="backgroundPreview" class="background-preview">
-              <span>ยังไม่มีรูปพื้นหลัง</span>
-            </div>
-          </div>
+.section-head input {
+  width: min(360px, 100%);
+  border: 1px solid rgba(255,255,255,.65);
+  background: rgba(255,255,255,.35);
+  color: #596b86;
+  padding: 12px 15px;
+  border-radius: 15px;
+  outline: none;
+  backdrop-filter: blur(15px);
+}
+.section-head input:focus {
+  border-color: rgba(155,205,245,.9);
+  box-shadow: 0 0 0 3px rgba(155,205,245,.18);
+}
 
-          <label>
-            รูปพื้นหลัง
-            <input id="backgroundFile" type="file" accept="image/*">
-          </label>
+/* PRODUCTS */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
 
-          <div class="theme-grid">
-            <label>
-              สีหลัก
-              <input id="accentColor" type="color" value="#9ed8f5">
-            </label>
-            <label>
-              สีรอง
-              <input id="secondaryColor" type="color" value="#f6b6d1">
-            </label>
-          </div>
+.product-card {
+  overflow: hidden;
+  border-radius: 26px;
+  cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(117,154,190,.20);
+}
+.product-image {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid rgba(255,255,255,.45);
+}
+.card-body { padding: 18px; }
+.product-icon {
+  font-size: 12px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.card-body h3 { margin: 7px 0; color: #596b86; font-size: 22px; line-height: 1.25; }
+.card-body p {
+  margin: 0;
+  color: #8793a6;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+.arrow { float: right; color: #ec8fb7; font-size: 24px; }
 
-          <label class="check">
-            <input id="autoTheme" type="checkbox" checked>
-            ปรับโทนจากรูปอัตโนมัติ
-          </label>
+/* RECOMMENDED */
+.recommended-section { margin-top: 34px; }
+.recommended-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+.recommendation-card {
+  overflow: hidden;
+  border-radius: 24px;
+}
+.recommendation-image {
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  display: block;
+}
+.recommendation-card .card-body { min-height: 145px; }
+.recommendation-card h3 { margin: 7px 0; }
+.recommendation-card p {
+  white-space: pre-line;
+  line-height: 1.7;
+  color: #7b879b;
+}
 
-          <div class="form-actions">
-            <button id="saveThemeBtn" type="button" class="primary">บันทึกพื้นหลัง &amp; ธีม</button>
-            <button id="removeBackgroundBtn" type="button" class="small danger">🗑️ ลบรูปพื้นหลัง / กลับค่าเริ่มต้น</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+/* DETAIL */
+.back {
+  border: 0;
+  background: rgba(255,255,255,.35);
+  color: #657691;
+  border-radius: 14px;
+  padding: 11px 16px;
+  margin-bottom: 18px;
+}
+.detail-hero {
+  padding: 26px;
+  border-radius: 30px;
+  margin-bottom: 18px;
+}
+.detail-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.detail-image {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.65);
+}
+.detail-icon { font-size: 58px; }
+.detail-hero h1 { color: #536783; margin: 8px 0; }
+.detail-description {
+  white-space: pre-line;
+  line-height: 1.9;
+  color: #728097;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+.info-card {
+  border-radius: 25px;
+  padding: 22px;
+  color: #718097;
+}
+.info-card h2 { color: #596b86; }
+.package {
+  padding: 13px 15px;
+  margin: 9px 0;
+  border-radius: 16px;
+  background: rgba(255,255,255,.30);
+  border: 1px solid rgba(255,255,255,.40);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+.package b { color: #e98db5; font-size: 18px; }
 
-  <footer id="siteFooter">© <span id="year"></span> Heybaragise 🌻🐰</footer>
+/* PROMO */
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+}
+.promo-card {
+  border-radius: 25px;
+  overflow: hidden;
+  transition: transform .25s ease;
+}
+.promo-card:hover { transform: translateY(-4px); }
+.promo-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+.promo-card .card-body { min-height: 145px; }
+.price-old { text-decoration: line-through; color: #9aa4b4; }
+.price-sale { color: #e98db5; font-size: 22px; font-weight: 700; }
 
-  <!-- LOGIN -->
-  <dialog id="authDialog" class="modal glass">
-    <button type="button" class="close" data-close="authDialog">×</button>
-    <h2>🔐 Admin Login</h2>
-    <p>เข้าสู่ระบบเพื่อแก้ไขข้อมูลร้าน</p>
-    <form id="loginForm">
-      <input id="loginEmail" type="email" placeholder="Email" required>
-      <input id="loginPassword" type="password" placeholder="Password" required>
-      <button class="primary" type="submit">เข้าสู่ระบบ</button>
-    </form>
-  </dialog>
+/* BUTTONS */
+.primary,
+.external-link {
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  padding: 11px 17px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(170,143,188,.20);
+}
+.primary:hover,
+.external-link:hover { transform: translateY(-2px); }
 
-  <!-- PRODUCT -->
-  <dialog id="productDialog" class="modal glass wide">
-    <button type="button" class="close" data-close="productDialog">×</button>
-    <h2 id="productFormTitle">เพิ่มสินค้า</h2>
-    <form id="productForm">
-      <input type="hidden" id="productId">
+.ghost,
+.small {
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,.40);
+  color: #657692;
+  padding: 9px 12px;
+}
+.small { font-size: 14px; }
+.danger { background: rgba(255,155,180,.45); color: #c85f80; }
 
-      <label>ชื่อสินค้า<input id="pName" required></label>
-      <label>ไอคอน / Emoji<input id="pIcon" value="📱"></label>
-      <label>คำอธิบายสั้น<textarea id="pShort"></textarea></label>
-      <label>รายละเอียดเต็ม<textarea id="pDescription" placeholder="กด Enter เพื่อขึ้นบรรทัดใหม่ได้"></textarea></label>
-      <label>ลิงก์ภายนอก / ลิงก์สั่งซื้อ<input id="pLink" type="url" placeholder="https://..."></label>
-      <label>ลำดับการแสดงสินค้า<input id="pSortOrder" type="number" min="1" step="1" placeholder="เช่น 1 = ขึ้นก่อนสุด"></label>
-      <label>รูปปกสินค้า<input id="pImage" type="file" accept="image/*"></label>
-      <div id="pCurrentImage" class="current-image-note" hidden>🖼️ ใช้รูปเดิมอยู่ — ถ้าไม่เลือกรูปใหม่ ระบบจะเก็บรูปเดิมไว้</div>
-      <label class="check"><input id="pActive" type="checkbox" checked> เปิดแสดงสินค้า</label>
+/* ADMIN */
+.admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+.admin-head h2 { color: #586b88; margin: 7px 0; }
+.admin-head-actions { display: flex; gap: 8px; }
 
-      <h3>💳 แพ็กเกจ</h3>
-      <div id="packageRows"></div>
-      <button type="button" id="addPackageRow" class="ghost">＋ เพิ่มแพ็กเกจ</button>
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.tab {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,.5);
+  background: rgba(255,255,255,.3);
+  color: #718098;
+  padding: 10px 14px;
+  border-radius: 13px;
+}
+.tab.active {
+  background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+  color: white;
+}
+.admin-panel { display: none; }
+.admin-panel.active { display: block; }
+.panel-intro { margin: 8px 0 16px; }
+.panel-intro h3 { margin-bottom: 4px; color: #596b86; }
+.panel-intro p { color: #8793a6; }
 
-      <button class="primary" type="submit">บันทึกสินค้า</button>
-    </form>
-  </dialog>
+.admin-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+.admin-row {
+  padding: 15px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  color: #6e7e95;
+}
+.admin-row p { margin: 5px 0 0; font-size: 13px; opacity: .75; }
+.admin-actions { display: flex; gap: 7px; flex-wrap: wrap; }
 
-  <!-- PROMOTION -->
-  <dialog id="promoDialog" class="modal glass wide">
-    <button type="button" class="close" data-close="promoDialog">×</button>
-    <h2 id="promoFormTitle">เพิ่มโปรโมชั่น</h2>
-    <form id="promoForm">
-      <input type="hidden" id="promoId">
+/* THEME EDITOR */
+.theme-editor {
+  padding: 20px;
+  border-radius: 24px;
+  max-width: 720px;
+}
+.background-preview {
+  width: 100%;
+  height: 220px;
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg,#dff6ff,#f2e5ff,#ffe5f1);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255,255,255,.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8290a5;
+  margin-bottom: 16px;
+}
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+input[type="color"] {
+  height: 46px;
+  padding: 4px;
+}
 
-      <label>สินค้า<select id="promoProduct"></select></label>
-      <label>ชื่อรายการ<input id="promoTitle" required></label>
-      <label>รายละเอียด<textarea id="promoDescription"></textarea></label>
-      <label>รูปโปรโมท / Poster<input id="promoImage" type="file" accept="image/*"></label>
-      <label>ลิงก์ภายนอก<input id="promoLink" type="url" placeholder="https://..."></label>
-      <label class="check"><input id="promoActive" type="checkbox" checked> เปิดแสดง</label>
+/* CONTACT */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.contact-link {
+  text-decoration: none;
+  color: #66758c;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.28);
+  border: 1px solid rgba(255,255,255,.45);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.contact-link img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
 
-      <button class="primary" type="submit">บันทึก</button>
-    </form>
-  </dialog>
+/* MODALS & FORMS */
+.modal {
+  width: min(560px, 92vw);
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: 26px;
+  padding: 25px;
+  color: #66758c;
+  background: rgba(237,247,255,.78);
+  backdrop-filter: blur(25px);
+  box-shadow: 0 25px 80px rgba(103,136,172,.20);
+}
+.modal.wide { width: min(720px, 94vw); }
+.modal::backdrop {
+  background: rgba(122,145,175,.18);
+  backdrop-filter: blur(5px);
+}
+.close {
+  float: right;
+  border: 0;
+  background: transparent;
+  color: #8491a5;
+  font-size: 28px;
+}
+form { display: grid; gap: 12px; }
+label { display: grid; gap: 7px; color: #687992; }
+input, textarea, select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.65);
+  border-radius: 13px;
+  background: rgba(255,255,255,.42);
+  color: #5e708a;
+  outline: none;
+}
+textarea {
+  min-height: 100px;
+  resize: vertical;
+  white-space: pre-line;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: rgba(155,205,245,.9);
+  box-shadow: 0 0 0 3px rgba(155,205,245,.18);
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.check input { width: auto; }
+.package-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 42px;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-  <!-- COMBO -->
-  <dialog id="comboDialog" class="modal glass">
-    <button type="button" class="close" data-close="comboDialog">×</button>
-    <h2 id="comboFormTitle">สร้าง Combo</h2>
-    <form id="comboForm">
-      <input type="hidden" id="comboId">
+/* GENERAL */
+.badge {
+  display: inline-block;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.42);
+  border: 1px solid rgba(255,255,255,.55);
+  color: #7889a5;
+  font-size: 13px;
+}
+.empty {
+  padding: 40px;
+  text-align: center;
+  color: #91a0b4;
+}
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 25px;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(255,255,255,.84);
+  color: #63728a;
+  border: 1px solid rgba(255,255,255,.7);
+  backdrop-filter: blur(20px);
+  padding: 12px 20px;
+  border-radius: 999px;
+  box-shadow: 0 12px 35px rgba(110,140,175,.18);
+  transition: .3s;
+  z-index: 100;
+  max-width: calc(100vw - 30px);
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
 
-      <label>ชื่อ Combo<input id="comboName" required placeholder="เช่น Netflix + Spotify"></label>
-      <label>รายละเอียด<textarea id="comboDescription"></textarea></label>
-      <div id="comboPackageSelectors" class="combo-package-selectors"></div>
-      <p class="muted combo-form-note">เลือกสินค้า 2 รายการ และเลือกแพ็กเกจของแต่ละสินค้าเพื่อจับคู่เป็น Combo ลูกค้าจะเห็นเฉพาะ 2 แพ็กเกจนี้</p>
-      <label>ราคาปกติรวม 2 แพ็กเกจ<input id="comboOriginalPrice" type="number" min="0" step="0.01"></label>
-      <label>ราคาพิเศษ<input id="comboSalePrice" type="number" min="0" step="0.01"></label>
-      <label>ลิงก์สั่งซื้อ<input id="comboLink" type="url" placeholder="https://..."></label>
-      <label class="check"><input id="comboActive" type="checkbox" checked> เปิดแสดง</label>
+/* MOBILE */
+@media (max-width: 700px) {
+  .header {
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 10px 12px;
+    top: 6px;
+  }
 
-      <button class="primary" type="submit">บันทึก Combo</button>
-    </form>
-  </dialog>
+  .header-brand-area {
+    gap: 7px;
+  }
 
-  <!-- RECOMMENDED -->
-  <dialog id="recommendedDialog" class="modal glass wide">
-    <button type="button" class="close" data-close="recommendedDialog">×</button>
-    <h2 id="recommendedFormTitle">เพิ่มเรื่องแนะนำ</h2>
-    <form id="recommendedForm">
-      <input type="hidden" id="recommendedId">
+  .brand {
+    font-size: 17px;
+  }
 
-      <label>ชื่อเรื่อง<input id="recommendedTitle" required placeholder="เช่น Wednesday"></label>
-      <label>คำอธิบาย<textarea id="recommendedDescription" placeholder="กด Enter เพื่อขึ้นบรรทัดใหม่ได้"></textarea></label>
-      <label>แพลตฟอร์ม / หมวด<input id="recommendedPlatform" placeholder="Netflix / Disney+ / Viu"></label>
-      <label>รูป Poster<input id="recommendedImage" type="file" accept="image/*"></label>
-      <label>ลิงก์ภายนอก<input id="recommendedLink" type="url" placeholder="https://..."></label>
-      <label>ลำดับ<input id="recommendedSort" type="number" min="0" value="0"></label>
-      <label class="check"><input id="recommendedActive" type="checkbox" checked> เปิดแสดง</label>
+  .social-link {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
 
-      <button class="primary" type="submit">บันทึกเรื่องแนะนำ</button>
-    </form>
-  </dialog>
+  .social-link img {
+    width: 18px;
+    height: 18px;
+  }
 
-  <!-- SOCIAL -->
-  <dialog id="socialDialog" class="modal glass">
-    <button type="button" class="close" data-close="socialDialog">×</button>
-    <h2 id="socialFormTitle">เพิ่มช่องทางติดต่อ</h2>
-    <form id="socialForm">
-      <input type="hidden" id="socialId">
+  nav { display: none; }
 
-      <label>ชื่อช่องทาง<input id="socialName" required placeholder="Instagram"></label>
-      <label>รูปโลโก้<input id="socialImage" type="file" accept="image/*"></label>
-      <label>ลิงก์ภายนอก<input id="socialUrl" type="url" required placeholder="https://instagram.com/..."></label>
-      <label>ลำดับ<input id="socialSort" type="number" min="0" value="0"></label>
-      <label class="check"><input id="socialActive" type="checkbox" checked> เปิดแสดง</label>
+  .container {
+    width: calc(100% - 18px);
+  }
 
-      <button class="primary" type="submit">บันทึกช่องทาง</button>
-    </form>
-  </dialog>
+  .hero {
+    padding: 18px 10px;
+    border-radius: 24px;
+    margin-bottom: 20px;
+  }
 
-  <div id="toast" role="status" aria-live="polite"></div>
+  .store-name {
+    font-size: clamp(27px, 8vw, 42px);
+    margin-bottom: 6px;
+  }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=59"></script>
-</body>
-</html>
+  .hero-line.blue-line {
+    font-size: clamp(8px, 2.65vw, 15px);
+  }
 
+  .hero-line.yellow-line {
+    font-size: clamp(12px, 3.4vw, 18px);
+  }
+
+  .section-head,
+  .section-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .section-head input { width: 100%; }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 11px;
+  }
+
+  .product-card { border-radius: 20px; }
+  .product-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+  .card-body { padding: 13px; }
+  .product-icon {
+    font-size: 12px;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .card-body h3 { font-size: 21px; line-height: 1.3; margin: 6px 0 8px; }
+  .card-body p { font-size: 13px; line-height: 1.65; }
+
+  .recommended-grid,
+  .promo-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 11px;
+  }
+
+  .recommendation-image { height: 180px; }
+  .promo-image { height: 150px; }
+
+  .detail-top {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .detail-image { width: 78px; height: 78px; }
+  .detail-hero { padding: 18px; }
+  .detail-hero h1 { font-size: 23px; }
+  .detail-description { font-size: 14px; line-height: 1.8; }
+
+  .admin-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-head-actions { width: 100%; }
+  .admin-head-actions button { flex: 1; }
+
+  .admin-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-actions { width: 100%; }
+  .admin-actions button { flex: 1; }
+
+  .theme-grid { grid-template-columns: 1fr; }
+  .background-preview { height: 170px; }
+
+  .package-row {
+    grid-template-columns: 1fr 90px 38px;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand { font-size: 15px; }
+  .social-links { gap: 4px; }
+  .social-link { width: 28px; height: 28px; flex-basis: 28px; }
+  .social-link img { width: 16px; height: 16px; }
+
+  .hero-line.blue-line { font-size: 7.5px; }
+  .hero-line.yellow-line { font-size: 11px; }
+
+  .recommended-grid,
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* HARD SAFETY: ADMIN IS HIDDEN UNTIL JAVASCRIPT OPENS IT */
+#adminView:not(.active), #adminView[hidden] {
+  display: none !important;
+}
+
+
+/* PRODUCT FORM - KEEP OLD IMAGE + MANUAL DISPLAY ORDER */
+.current-image-note {
+  margin-top: -4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(158,216,245,.16);
+  border: 1px solid rgba(255,255,255,.55);
+  color: #718098;
+  font-size: 13px;
+}
