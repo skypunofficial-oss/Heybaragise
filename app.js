@@ -158,7 +158,7 @@ async function loadAll() {
 
       sb
         .from("combos")
-        .select("*, combo_items(product_id, products(id,name,icon,image_url))")
+        .select("*, combo_items(product_id, package_id, products(id,name,icon,image_url,description,short_description,packages(*)))")
         .eq("active", true)
         .order("created_at", { ascending: false })
     ]);
@@ -189,8 +189,86 @@ function comboImageHtml(combo, className = "combo-image-grid") {
 
   return `<div class="${className} count-${Math.min(imageItems.length, 4)}">${imageItems
     .slice(0, 4)
-    .map((item) => `<img src="${escapeHtml(item.products.image_url)}" alt="${escapeHtml(item.products.name || "สินค้า")}" loading="lazy">`)
+    .map((item) => `<div class="combo-image-cell"><img src="${escapeHtml(item.products.image_url)}" alt="${escapeHtml(item.products.name || "สินค้า")}" loading="lazy"></div>`)
     .join("")}</div>`;
+}
+
+function openCombo(id) {
+  const combo = state.combos.find((item) => item.id === id);
+  if (!combo) return;
+
+  const items = (combo.combo_items || []).filter((item) => item.products && item.package_id);
+  const selectedPackageDetails = items.map((item) => {
+    const product = item.products;
+    const pkg = (product.packages || []).find((p) => p.id === item.package_id);
+    if (!pkg) return "";
+
+    return `
+      <section class="info-card glass combo-product-detail">
+        <div class="combo-product-heading">
+          ${product.image_url
+            ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name || "สินค้า")}" class="combo-detail-product-image">`
+            : `<div class="combo-detail-product-icon">${escapeHtml(product.icon || "📱")}</div>`}
+          <div>
+            <h3>${mixedText(product.name || "สินค้า")}</h3>
+            <span class="badge">${mixedText(pkg.name || "แพ็กเกจที่เลือก")}</span>
+          </div>
+        </div>
+        <div class="combo-selected-package-price">
+          <span>ราคาปกติของแพ็กเกจ</span>
+          <strong>฿${money(pkg.price)}</strong>
+        </div>
+        ${product.description
+          ? `<div class="combo-full-description"><h4>📖 รายละเอียดเต็ม</h4><div>${mixedText(product.description)}</div></div>`
+          : product.short_description
+            ? `<div class="combo-full-description"><h4>📖 รายละเอียดเต็ม</h4><div>${mixedText(product.short_description)}</div></div>`
+            : ""}
+      </section>
+    `;
+  }).join("");
+
+  const selectedPrices = items.map((item) => {
+    const pkg = (item.products?.packages || []).find((p) => p.id === item.package_id);
+    return pkg ? money(pkg.price) : null;
+  }).filter(Boolean);
+
+  const packageSummary = items.map((item) => {
+    const pkg = (item.products?.packages || []).find((p) => p.id === item.package_id);
+    return pkg ? `${item.products.name} — ${pkg.name}` : item.products.name;
+  }).join(" + ");
+
+  const comboOriginal = combo.original_price || selectedPrices.reduce((sum, price) => sum + Number(price), 0);
+
+  $("#productDetail").innerHTML = `
+    <div class="detail-hero glass combo-detail-hero">
+      ${comboImageHtml(combo, "combo-image-grid combo-detail-image")}
+      <div class="combo-detail-content">
+        <span class="badge">🤝 Combo Deal</span>
+        <h1>${mixedText(combo.name)}</h1>
+        ${combo.description ? `<p class="detail-description">${mixedText(combo.description)}</p>` : ""}
+        <p class="combo-products">${mixedText(packageSummary)}</p>
+        <div class="combo-detail-price">
+          ${combo.original_price ? `<span class="price-old">฿${money(combo.original_price)}</span>` : `<span class="price-old">฿${money(comboOriginal)}</span>`}
+          <strong>฿${money(combo.sale_price)}</strong>
+        </div>
+        <p class="combo-price-note">ราคาพิเศษนี้คือราคา Combo สำหรับ 2 แพ็กเกจที่เลือกด้านล่าง</p>
+        ${combo.external_url ? `<a class="external-link" href="${escapeHtml(combo.external_url)}" target="_blank" rel="noopener noreferrer">สั่งซื้อ Combo ↗</a>` : ""}
+      </div>
+    </div>
+
+    <div class="combo-detail-section">
+      <div class="section-head">
+        <div>
+          <span class="section-label font-en">SELECTED PACKAGES</span>
+          <h2>💳 2 แพ็กเกจใน Combo นี้</h2>
+        </div>
+      </div>
+      <p class="muted">แสดงเฉพาะ 2 แพ็กเกจที่ร้านเลือกมาจัด Combo พร้อมรายละเอียดเต็มของแต่ละสินค้า</p>
+      <div class="detail-grid combo-detail-grid">${selectedPackageDetails || `<div class="empty">ยังไม่มีแพ็กเกจที่เลือกใน Combo นี้</div>`}</div>
+    </div>
+  `;
+
+  showView("detail");
 }
 
 function renderCombosHome() {
@@ -207,7 +285,7 @@ function renderCombosHome() {
   }
 
   grid.innerHTML = combos.map((combo) => `
-    <article class="combo-card glass" data-combo-link="${escapeHtml(combo.external_url || "")}">
+    <article class="combo-card glass" data-combo-id="${escapeHtml(combo.id)}">
       ${comboImageHtml(combo)}
       <div class="card-body">
         <span class="badge">🤝 Combo Deal</span>
@@ -220,17 +298,13 @@ function renderCombosHome() {
           ${combo.original_price ? `<span class="price-old">฿${money(combo.original_price)}</span>` : ""}
           <span class="price-sale">฿${money(combo.sale_price)}</span>
         </div>
-        ${combo.external_url ? `<span class="arrow">→</span>` : ""}
+        <span class="arrow">→</span>
       </div>
     </article>
   `).join("");
 
   $$("#comboHomeGrid .combo-card").forEach((card) => {
-    const link = card.dataset.comboLink;
-    if (!link) return;
-    card.addEventListener("click", () => {
-      window.open(link, "_blank", "noopener,noreferrer");
-    });
+    card.addEventListener("click", () => openCombo(card.dataset.comboId));
   });
 }
 
@@ -847,7 +921,7 @@ async function loadAdminData() {
         .order("created_at", { ascending: false }),
 
       sb.from("combos")
-        .select("*, combo_items(product_id)")
+        .select("*, combo_items(product_id, package_id)")
         .order("created_at", { ascending: false }),
 
       sb.from("promotions")
@@ -1349,10 +1423,57 @@ $("#addComboBtn")?.addEventListener("click", () => {
   openDialog("comboDialog");
 });
 
+function renderComboPackageSelectors(selectedItems = []) {
+  const wrap = $("#comboPackageSelectors");
+  if (!wrap) return;
+
+  const products = state.adminProducts || [];
+  const rows = [0, 1].map((index) => {
+    const current = selectedItems[index] || {};
+    const product = products.find((p) => p.id === current.product_id) || products[0];
+    const productId = current.product_id || product?.id || "";
+    const packageOptions = (products.find((p) => p.id === productId)?.packages || []).map((pkg) =>
+      `<option value="${escapeHtml(pkg.id)}" ${pkg.id === current.package_id ? "selected" : ""}>${escapeHtml(pkg.name || "แพ็กเกจ")} — ฿${money(pkg.price)}</option>`
+    ).join("");
+
+    const productOptions = products.map((p) =>
+      `<option value="${escapeHtml(p.id)}" ${p.id === productId ? "selected" : ""}>${escapeHtml(p.icon || "📱")} ${escapeHtml(p.name)}</option>`
+    ).join("");
+
+    return `
+      <div class="combo-package-row" data-index="${index}">
+        <strong>แพ็กเกจที่ ${index + 1}</strong>
+        <label>เลือกสินค้า<select class="combo-package-product" required>${productOptions}</select></label>
+        <label>เลือกแพ็กเกจ<select class="combo-package-select" required>${packageOptions}</select></label>
+      </div>
+    `;
+  }).join("");
+
+  wrap.innerHTML = rows;
+  $$(".combo-package-product", wrap).forEach((select) => {
+    select.addEventListener("change", () => {
+      const row = select.closest(".combo-package-row");
+      const packageSelect = row.querySelector(".combo-package-select");
+      const product = products.find((p) => p.id === select.value);
+      packageSelect.innerHTML = (product?.packages || []).map((pkg) =>
+        `<option value="${escapeHtml(pkg.id)}">${escapeHtml(pkg.name || "แพ็กเกจ")} — ฿${money(pkg.price)}</option>`
+      ).join("");
+    });
+  });
+}
+
+function getComboSelectedPackages() {
+  return $$("#comboPackageSelectors .combo-package-row").map((row) => ({
+    product_id: row.querySelector(".combo-package-product")?.value || "",
+    package_id: row.querySelector(".combo-package-select")?.value || ""
+  })).filter((item) => item.product_id && item.package_id);
+}
+
 function resetComboForm() {
   $("#comboForm")?.reset();
   $("#comboId").value = "";
   fillProductSelects();
+  renderComboPackageSelectors([]);
   $("#comboFormTitle").textContent = "สร้าง Combo ลดราคา";
 }
 
@@ -1369,13 +1490,7 @@ window.editCombo = (id) => {
   $("#comboSalePrice").value = combo.sale_price || "";
   $("#comboLink").value = combo.external_url || "";
   $("#comboActive").checked = !!combo.active;
-
-  (combo.combo_items || []).forEach((item) => {
-    const option = [...$("#comboProducts").options]
-      .find((opt) => opt.value === item.product_id);
-
-    if (option) option.selected = true;
-  });
+  renderComboPackageSelectors(combo.combo_items || []);
 
   $("#comboFormTitle").textContent = "แก้ไข Combo";
   openDialog("comboDialog");
@@ -1386,13 +1501,14 @@ $("#comboForm")?.addEventListener("submit", async (event) => {
 
   try {
     const id = $("#comboId").value;
+    const selected = getComboSelectedPackages();
 
-    const selected = [
-      ...$("#comboProducts").selectedOptions
-    ].map((option) => option.value);
+    if (selected.length !== 2) {
+      throw new Error("กรุณาเลือกแพ็กเกจให้ครบ 2 แพ็กเกจ");
+    }
 
-    if (selected.length < 2) {
-      throw new Error("เลือกสินค้าอย่างน้อย 2 รายการ");
+    if (selected[0].product_id === selected[1].product_id) {
+      throw new Error("Combo ต้องเลือกจากสินค้า 2 รายการ");
     }
 
     const payload = {
@@ -1411,30 +1527,21 @@ $("#comboForm")?.addEventListener("submit", async (event) => {
     let comboId = id;
 
     if (id) {
-      const result = await sb
-        .from("combos")
-        .update(payload)
-        .eq("id", id);
-
+      const result = await sb.from("combos").update(payload).eq("id", id);
       if (result.error) throw result.error;
-
-      await sb.from("combo_items").delete().eq("combo_id", id);
+      const deleted = await sb.from("combo_items").delete().eq("combo_id", id);
+      if (deleted.error) throw deleted.error;
     } else {
-      const result = await sb
-        .from("combos")
-        .insert(payload)
-        .select()
-        .single();
-
+      const result = await sb.from("combos").insert(payload).select().single();
       if (result.error) throw result.error;
-
       comboId = result.data.id;
     }
 
     const result = await sb.from("combo_items").insert(
-      selected.map((productId) => ({
+      selected.map((item) => ({
         combo_id: comboId,
-        product_id: productId
+        product_id: item.product_id,
+        package_id: item.package_id
       }))
     );
 
@@ -1741,4 +1848,3 @@ async function init() {
 }
 
 init();
-
