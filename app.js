@@ -1,10 +1,8 @@
-// =========================================================
-// HEYBARAGISE APP
-// Supabase + Admin + Products + Packages + Combo
-// Social Links + Background/Theme + Recommended
-// =========================================================
-
+// ============================
+// 1) ใส่ค่าจาก Supabase Project Settings > API
+// ============================
 const SUPABASE_URL = "https://amrdtfwlmkkgtsozhupi.supabase.co";
+
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_oLIc9gwzec-BwJgSwhJncw_8yucB6Wu";
 
@@ -20,1831 +18,479 @@ const sb = supabase.createClient(
   }
 );
 
-const state = {
-  products: [],
-  promotions: [],
-  combos: [],
-  recommended: [],
-  socialLinks: [],
-  settings: null,
-  adminProducts: [],
-  adminPromotions: [],
-  adminCombos: [],
-  adminRecommended: [],
-  adminSocialLinks: [],
-  selectedProduct: null,
-  isAdmin: false
-};
+const state = { products: [], promotions: [], combos: [], selectedProduct: null, isAdmin: false };
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+$("#year").textContent = new Date().getFullYear();
 
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => [...document.querySelectorAll(selector)];
+function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function money(v){ return Number(v||0).toLocaleString("th-TH",{maximumFractionDigits:2}); }
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
+function showView(id){ $$(".view").forEach(x=>x.classList.remove("active")); $("#"+id+"View").classList.add("active"); window.scrollTo({top:0,behavior:"smooth"}); }
+function openDialog(id){ $("#"+id).showModal(); }
+function closeDialog(id){ $("#"+id).close(); }
 
-const DEFAULT_THEME = {
-  background_image: null,
-  accent_color: "#9ed8f5",
-  secondary_color: "#f6b6d1"
-};
-
-$("#year") && ($("#year").textContent = new Date().getFullYear());
-
-function escapeHtml(value = "") {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  }[char]));
+async function loadAll(){
+  const [p,pr,c] = await Promise.all([
+    sb.from("products").select("*, packages(*)").eq("active",true).order("sort_order"),
+    sb.from("promotions").select("*, products(name,icon)").eq("active",true).order("created_at",{ascending:false}),
+    sb.from("combos").select("*, combo_items(product_id, package_id)").eq("active",true).order("created_at",{ascending:false})
+  ]);
+  if(p.error) console.error(p.error);
+  if(pr.error) console.error(pr.error);
+  if(c.error) console.error(c.error);
+  state.products=p.data||[];
+  state.promotions=pr.data||[];
+  state.combos=(c.data||[]).map(enrichCombo);
+  renderProducts(); renderPromotions();
 }
 
-/*
-  Dynamic text helper:
-  Thai stays LKKaohom.
-  Latin / English / numbers use OngleipYuntaeng.
-  This avoids forcing one font on every script.
-*/
-function mixedText(value = "") {
-  const safe = escapeHtml(value);
-  return safe.replace(
-    /([A-Za-zÀ-ÿ0-9가-힣ㄱ-ㅎㅏ-ㅣ][A-Za-zÀ-ÿ0-9가-힣ㄱ-ㅎㅏ-ㅣ\s.,!?'"&+\-_/:%#()]*[A-Za-zÀ-ÿ0-9가-힣ㄱ-ㅎㅏ-ㅣ])/g,
-    '<span class="font-en">$1</span>'
-  );
-}
-
-function money(value) {
-  return Number(value || 0).toLocaleString("th-TH", {
-    maximumFractionDigits: 2
+function enrichCombo(combo){
+  const items=(combo.combo_items||[]).map(item=>{
+    const product=state.products.find(p=>String(p.id)===String(item.product_id));
+    const pkg=(product?.packages||[]).find(x=>String(x.id)===String(item.package_id));
+    return {...item, products:product||null, packages:pkg||null};
   });
+  return {...combo, combo_items:items};
 }
 
-function toast(message) {
-  const target = $("#toast");
-  if (!target) return;
-
-  target.textContent = message;
-  target.classList.add("show");
-
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => {
-    target.classList.remove("show");
-  }, 2600);
+function renderProducts(list=state.products){
+  $("#productGrid").innerHTML = list.length ? list.map(p=>`
+    <article class="product-card glass" data-id="${p.id}">
+      ${p.image_url?`<img class="product-image" src="${p.image_url}" alt="${escapeHtml(p.name)}">`:""}
+      <div class="card-body">
+        <div class="product-icon">${escapeHtml(p.icon||"📱")}</div>
+        <h3>${escapeHtml(p.name)}</h3>
+        <p>${escapeHtml(p.short_description||"")}</p>
+        <span class="arrow">→</span>
+      </div>
+    </article>`).join("") : `<div class="empty">ยังไม่มีสินค้า</div>`;
+  $$("#productGrid .product-card").forEach(card=>card.onclick=()=>openProduct(card.dataset.id));
 }
 
-function showView(id) {
-  const target = $("#" + id + "View");
-  if (!target) return;
+function renderPromotions(){
+  const promos = state.promotions.map(p=>`
+    <article class="promo-card glass">
+      ${p.image_url?`<img class="promo-image" src="${p.image_url}" alt="">`:``}
+      <div class="card-body"><span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
+      <h3>${escapeHtml(p.title)}</h3><p>${escapeHtml(p.description||"")}</p>
+      ${p.external_url?`<a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ดูเพิ่มเติม ↗</a>`:""}</div>
+    </article>`).join("");
 
-  $$(".view").forEach((view) => {
-    view.classList.remove("active");
-    view.hidden = true;
-  });
+  const combos = state.combos.map(c=>`
+    <article class="combo-card promo-card glass" data-combo-id="${c.id}">
+      <div class="combo-image-row">
+        ${(c.combo_items||[]).slice(0,2).map(i=>i.products?.image_url
+          ? `<img class="combo-product-image" src="${i.products.image_url}" alt="${escapeHtml(i.products?.name||"")}">`
+          : `<div class="combo-product-placeholder">${escapeHtml(i.products?.icon||"📱")}</div>`
+        ).join("")}
+      </div>
+      <div class="card-body">
+        <span class="badge">🤝 Combo Deal</span>
+        <h3>${escapeHtml(c.name)}</h3>
+        <p>${escapeHtml(c.description||"")}</p>
+        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
+        ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
+        <div class="price-sale">฿${money(c.sale_price)}</div>
+      </div>
+    </article>`).join("");
 
-  target.hidden = false;
-  target.classList.add("active");
-
-  const footer = $("#siteFooter");
-  if (footer) footer.hidden = id === "admin";
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+  $("#promotionGrid").innerHTML = (promos+combos)||`<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
+  $$("#promotionGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
 }
+function openCombo(id){
+  const c=state.combos.find(x=>String(x.id)===String(id)); if(!c)return;
+  const items=(c.combo_items||[]).slice(0,2);
+  const images=items.map(i=>i.products?.image_url
+    ? `<img class="combo-detail-product-image" src="${i.products.image_url}" alt="${escapeHtml(i.products?.name||"")}">`
+    : `<div class="combo-detail-product-placeholder">${escapeHtml(i.products?.icon||"📱")}</div>`
+  ).join("");
 
-function openDialog(id) {
-  const dialog = $("#" + id);
-  if (!dialog) return;
-
-  if (typeof dialog.showModal === "function") {
-    dialog.showModal();
-  }
-}
-
-function closeDialog(id) {
-  const dialog = $("#" + id);
-  if (!dialog) return;
-
-  if (dialog.open) dialog.close();
-}
-
-function isValidExternalUrl(url) {
-  if (!url) return true;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "https:" || parsed.protocol === "http:";
-  } catch {
-    return false;
-  }
-}
-
-// =========================================================
-// CUSTOMER DATA
-// =========================================================
-
-async function loadAll() {
-  const [productsResult, promotionsResult, combosResult] =
-    await Promise.all([
-      sb
-        .from("products")
-        .select("*, packages(*)")
-        .eq("active", true)
-        .order("sort_order"),
-
-      sb
-        .from("promotions")
-        .select("*, products(name,icon)")
-        .eq("active", true)
-        .order("created_at", { ascending: false }),
-
-      sb
-        .from("combos")
-        .select("*, combo_items(product_id, package_id, products(id,name,icon,image_url,description,short_description,packages(*)))")
-        .eq("active", true)
-        .order("created_at", { ascending: false })
-    ]);
-
-  if (productsResult.error) console.error("Products:", productsResult.error);
-  if (promotionsResult.error) console.error("Promotions:", promotionsResult.error);
-  if (combosResult.error) console.error("Combos:", combosResult.error);
-
-  state.products = productsResult.data || [];
-  state.promotions = promotionsResult.data || [];
-  state.combos = combosResult.data || [];
-
-  renderCombosHome();
-  renderProducts();
-  renderPromotions();
-}
-
-function comboImageHtml(combo, className = "combo-image-grid") {
-  const items = (combo.combo_items || []).filter((item) => item.products);
-  const imageItems = items.filter((item) => item.products.image_url);
-
-  if (!imageItems.length) {
-    return `<div class="${className} combo-image-fallback count-${Math.min(items.length, 4)}">${items
-      .slice(0, 4)
-      .map((item) => `<span>${escapeHtml(item.products?.icon || "📱")}</span>`)
-      .join("")}</div>`;
-  }
-
-  return `<div class="${className} count-${Math.min(imageItems.length, 4)}">${imageItems
-    .slice(0, 4)
-    .map((item) => `<div class="combo-image-cell"><img src="${escapeHtml(item.products.image_url)}" alt="${escapeHtml(item.products.name || "สินค้า")}" loading="lazy"></div>`)
-    .join("")}</div>`;
-}
-
-function openCombo(id) {
-  const combo = state.combos.find((item) => item.id === id);
-  if (!combo) return;
-
-  const items = (combo.combo_items || []).filter((item) => item.products && item.package_id);
-  const selectedPackageDetails = items.map((item) => {
-    const product = item.products;
-    const pkg = (product.packages || []).find((p) => p.id === item.package_id);
-    if (!pkg) return "";
-
-    return `
-      <section class="info-card glass combo-product-detail">
-        <div class="combo-product-heading">
-          ${product.image_url
-            ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name || "สินค้า")}" class="combo-detail-product-image">`
-            : `<div class="combo-detail-product-icon">${escapeHtml(product.icon || "📱")}</div>`}
-          <div>
-            <h3>${mixedText(product.name || "สินค้า")}</h3>
-            <span class="badge">${mixedText(pkg.name || "แพ็กเกจที่เลือก")}</span>
-          </div>
+  const details=items.map(i=>`
+    <section class="info-card glass combo-product-detail">
+      <div class="combo-detail-heading">
+        ${i.products?.image_url?`<img class="combo-detail-small-image" src="${i.products.image_url}" alt="">`:`<span class="combo-detail-icon">${escapeHtml(i.products?.icon||"📱")}</span>`}
+        <div>
+          <span class="badge">${escapeHtml(i.products?.name||"สินค้า")}</span>
+          <h2>${escapeHtml(i.products?.name||"สินค้า")}</h2>
         </div>
-        <div class="combo-selected-package-price">
-          <span>ราคาปกติของแพ็กเกจ</span>
-          <strong>฿${money(pkg.price)}</strong>
-        </div>
-        ${product.description
-          ? `<div class="combo-full-description"><h4>📖 รายละเอียดเต็ม</h4><div>${mixedText(product.description)}</div></div>`
-          : product.short_description
-            ? `<div class="combo-full-description"><h4>📖 รายละเอียดเต็ม</h4><div>${mixedText(product.short_description)}</div></div>`
-            : ""}
-      </section>
-    `;
-  }).join("");
+      </div>
+      <p class="detail-description">${escapeHtml(i.products?.description||i.products?.short_description||"")}</p>
+      <div class="package combo-selected-package">
+        <span>${escapeHtml(i.packages?.name||"แพ็กเกจที่เลือก")}</span>
+        <b>฿${money(i.packages?.price)}</b>
+      </div>
+    </section>`).join("");
 
-  const selectedPrices = items.map((item) => {
-    const pkg = (item.products?.packages || []).find((p) => p.id === item.package_id);
-    return pkg ? money(pkg.price) : null;
-  }).filter(Boolean);
-
-  const packageSummary = items.map((item) => {
-    const pkg = (item.products?.packages || []).find((p) => p.id === item.package_id);
-    return pkg ? `${item.products.name} — ${pkg.name}` : item.products.name;
-  }).join(" + ");
-
-  const comboOriginal = combo.original_price || selectedPrices.reduce((sum, price) => sum + Number(price), 0);
-
-  $("#productDetail").innerHTML = `
+  $("#comboDetail").innerHTML=`
     <div class="detail-hero glass combo-detail-hero">
-      ${comboImageHtml(combo, "combo-image-grid combo-detail-image")}
-      <div class="combo-detail-content">
-        <span class="badge">🤝 Combo Deal</span>
-        <h1>${mixedText(combo.name)}</h1>
-        ${combo.description ? `<p class="detail-description">${mixedText(combo.description)}</p>` : ""}
-        <p class="combo-products">${mixedText(packageSummary)}</p>
-        <div class="combo-detail-price">
-          ${combo.original_price ? `<span class="price-old">฿${money(combo.original_price)}</span>` : `<span class="price-old">฿${money(comboOriginal)}</span>`}
-          <strong>฿${money(combo.sale_price)}</strong>
-        </div>
-        <p class="combo-price-note">ราคาพิเศษนี้คือราคา Combo สำหรับ 2 แพ็กเกจที่เลือกด้านล่าง</p>
-        ${combo.external_url ? `<a class="external-link" href="${escapeHtml(combo.external_url)}" target="_blank" rel="noopener noreferrer">สั่งซื้อ Combo ↗</a>` : ""}
+      <div class="combo-detail-image-row">${images}</div>
+      <span class="badge">🤝 Combo Deal</span>
+      <h1>${escapeHtml(c.name)}</h1>
+      <p class="detail-description">${escapeHtml(c.description||"")}</p>
+      <div class="combo-detail-price">
+        ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
+        <strong>฿${money(c.sale_price)}</strong>
       </div>
+      ${c.external_url?`<p style="margin-top:18px"><a class="external-link" href="${c.external_url}" target="_blank" rel="noopener">รับ Combo / สั่งซื้อ ↗</a></p>`:""}
     </div>
-
-    <div class="combo-detail-section">
-      <div class="section-head">
-        <div>
-          <span class="section-label font-en">SELECTED PACKAGES</span>
-          <h2>💳 2 แพ็กเกจใน Combo นี้</h2>
-        </div>
-      </div>
-      <p class="muted">แสดงเฉพาะ 2 แพ็กเกจที่ร้านเลือกมาจัด Combo พร้อมรายละเอียดเต็มของแต่ละสินค้า</p>
-      <div class="detail-grid combo-detail-grid">${selectedPackageDetails || `<div class="empty">ยังไม่มีแพ็กเกจที่เลือกใน Combo นี้</div>`}</div>
-    </div>
-  `;
-
-  showView("detail");
+    <div class="detail-grid combo-detail-grid">${details}</div>`;
+  showView("comboDetail");
 }
 
-function renderCombosHome() {
-  const section = $("#comboHomeSection");
-  const grid = $("#comboHomeGrid");
-  if (!section || !grid) return;
-
-  const combos = state.combos.filter((combo) => combo.active !== false);
-  section.hidden = !combos.length;
-
-  if (!combos.length) {
-    grid.innerHTML = "";
-    return;
-  }
-
-  grid.innerHTML = combos.map((combo) => `
-    <article class="combo-card glass" data-combo-id="${escapeHtml(combo.id)}">
-      ${comboImageHtml(combo)}
-      <div class="card-body">
-        <span class="badge">🤝 Combo Deal</span>
-        <h3>${mixedText(combo.name)}</h3>
-        ${combo.description ? `<p>${mixedText(combo.description)}</p>` : ""}
-        <p class="combo-products">${(combo.combo_items || []).map((item) =>
-          `${escapeHtml(item.products?.name || "")}`
-        ).filter(Boolean).join(" + ")}</p>
-        <div class="combo-price-row">
-          ${combo.original_price ? `<span class="price-old">฿${money(combo.original_price)}</span>` : ""}
-          <span class="price-sale">฿${money(combo.sale_price)}</span>
-        </div>
-        <span class="arrow">→</span>
-      </div>
-    </article>
-  `).join("");
-
-  $$("#comboHomeGrid .combo-card").forEach((card) => {
-    card.addEventListener("click", () => openCombo(card.dataset.comboId));
-  });
-}
-
-function renderProducts(list = state.products) {
-  const grid = $("#productGrid");
-  if (!grid) return;
-
-  if (!list.length) {
-    grid.innerHTML = `<div class="empty">ยังไม่มีสินค้า</div>`;
-    return;
-  }
-
-  grid.innerHTML = list.map((product) => `
-    <article class="product-card glass" data-id="${escapeHtml(product.id)}">
-      ${
-        product.image_url
-          ? `<img class="product-image"
-                   src="${escapeHtml(product.image_url)}"
-                   alt="${escapeHtml(product.name)}"
-                   loading="lazy">`
-          : ""
-      }
-
-      <div class="card-body">
-        <div class="product-icon">${escapeHtml(product.icon || "📱")}</div>
-        <h3>${mixedText(product.name)}</h3>
-        <p>${mixedText(product.short_description || "")}</p>
-        <span class="arrow">→</span>
-      </div>
-    </article>
-  `).join("");
-
-  $$("#productGrid .product-card").forEach((card) => {
-    card.addEventListener("click", () => openProduct(card.dataset.id));
-  });
-}
-
-function renderPromotions() {
-  const grid = $("#promotionGrid");
-  if (!grid) return;
-
-  const promotions = state.promotions.filter(
-    (item) => (item.category || "promotion") === "promotion"
-  );
-
-  const promoHtml = promotions.map((item) => `
-    <article class="promo-card glass">
-      ${
-        item.image_url
-          ? `<img class="promo-image"
-                   src="${escapeHtml(item.image_url)}"
-                   alt="${escapeHtml(item.title)}"
-                   loading="lazy">`
-          : ""
-      }
-      <div class="card-body">
-        <span class="badge">
-          ${escapeHtml(item.products?.icon || "🎁")}
-          ${mixedText(item.products?.name || "โปรโมชั่น")}
-        </span>
-        <h3>${mixedText(item.title)}</h3>
-        <p>${mixedText(item.description || "")}</p>
-        ${
-          item.external_url
-            ? `<a class="external-link"
-                  href="${escapeHtml(item.external_url)}"
-                  target="_blank"
-                  rel="noopener noreferrer">ดูเพิ่มเติม ↗</a>`
-            : ""
-        }
-      </div>
-    </article>
-  `).join("");
-
-  const comboHtml = state.combos.map((combo) => `
-    <article class="promo-card glass">
-      ${comboImageHtml(combo, "combo-image-grid promo-combo-image")}
-      <div class="card-body">
-        <span class="badge">🤝 Combo Deal</span>
-        <h3>${mixedText(combo.name)}</h3>
-        <p>${mixedText(combo.description || "")}</p>
-        <p>${(combo.combo_items || []).map((item) => mixedText(item.products?.name || "")).filter(Boolean).join(" + ")}</p>
-        ${combo.original_price ? `<span class="price-old">฿${money(combo.original_price)}</span>` : ""}
-        <div class="price-sale">฿${money(combo.sale_price)}</div>
-        ${combo.external_url ? `<a class="external-link" href="${escapeHtml(combo.external_url)}" target="_blank" rel="noopener noreferrer">รับโปรโมชั่น ↗</a>` : ""}
-      </div>
-    </article>
-  `).join("");
-
-  grid.innerHTML =
-    (promoHtml + comboHtml) ||
-    `<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
-}
-
-function openProduct(id) {
-  const product = state.products.find((item) => item.id === id);
-  if (!product) return;
-
-  state.selectedProduct = product;
-
-  const packages = (product.packages || []).map((item) => `
-    <div class="package">
-      <span>${mixedText(item.name)}</span>
-      <b>฿${money(item.price)}</b>
-    </div>
-  `).join("") || "<p>สอบถามราคาเพิ่มเติมได้</p>";
-
-  const relatedPromotions = state.promotions.filter(
-    (item) =>
-      item.product_id === product.id &&
-      (item.category || "promotion") === "promotion"
-  );
-
-  const relatedRecommended = state.recommended.filter(
-    (item) => item.product_id === product.id
-  );
-
-  $("#productDetail").innerHTML = `
-    <div class="detail-hero glass">
-      <div class="detail-top">
-        ${
-          product.image_url
-            ? `<img class="detail-image"
-                    src="${escapeHtml(product.image_url)}"
-                    alt="${escapeHtml(product.name)}">`
-            : `<div class="detail-icon">${escapeHtml(product.icon || "📱")}</div>`
-        }
-
-        <div>
-          <span class="badge">Premium App</span>
-          <h1>${mixedText(product.name)}</h1>
-          <p class="detail-description">
-            ${mixedText(product.description || product.short_description || "")}
-          </p>
-        </div>
-      </div>
-    </div>
-
+function openProduct(id){
+  const p=state.products.find(x=>x.id===id); if(!p)return;
+  state.selectedProduct=p;
+  const packages=(p.packages||[]).map(x=>`<div class="package"><span>${escapeHtml(x.name)}</span><b>฿${money(x.price)}</b></div>`).join("")||"<p>สอบถามราคาเพิ่มเติมได้</p>";
+  const related=state.promotions.filter(x=>x.product_id===p.id);
+  $("#productDetail").innerHTML=`
+    <div class="detail-hero glass"><div class="detail-top">
+      ${p.image_url?`<img class="detail-image" src="${p.image_url}" alt="">`:`<div class="detail-icon">${escapeHtml(p.icon||"📱")}</div>`}
+      <div><span class="badge">Premium App</span><h1>${escapeHtml(p.name)}</h1><p>${escapeHtml(p.description||p.short_description||"")}</p></div>
+    </div></div>
     <div class="detail-grid">
-      <section class="info-card glass">
-        <h2>💳 ราคาแพ็กเกจ</h2>
-        ${packages}
-      </section>
-
-      <section class="info-card glass">
-        <h2>🎁 โปรโมชั่น</h2>
-        ${
-          relatedPromotions.length
-            ? relatedPromotions.map((item) => `
-                <div class="package">
-                  <span>${mixedText(item.title)}</span>
-                </div>
-              `).join("")
-            : "<p>ยังไม่มีโปรโมชั่น</p>"
-        }
-      </section>
-
-      <section class="info-card glass">
-        <h2>🎬 น่าดู / แนะนำ</h2>
-        ${
-          relatedRecommended.length
-            ? relatedRecommended.map((item) => `
-                <div class="package">
-                  <span>${mixedText(item.title)}</span>
-                </div>
-              `).join("")
-            : "<p>ยังไม่มีรายการแนะนำ</p>"
-        }
-      </section>
+      <section class="info-card glass"><h2>💳 ราคาแพ็กเกจ</h2>${packages}</section>
+      <section class="info-card glass"><h2>🎁 โปรโมชั่น</h2>${related.length?related.map(x=>`<div class="package">${escapeHtml(x.title)}</div>`).join(""):"<p>ยังไม่มีโปรโมชั่น</p>"}</section>
+      <section class="info-card glass"><h2>🎬 น่าดู / แนะนำ</h2><p>Admin สามารถใช้ “โปรโมชั่น” เพิ่ม Poster ซีรีส์ หนัง หรือคอนเทนต์น่าดูของแต่ละแอปได้ พร้อมรูปและลิงก์ภายนอก</p></section>
     </div>
-
-    ${
-      product.external_url
-        ? `<p style="margin-top:18px">
-             <a class="external-link"
-                href="${escapeHtml(product.external_url)}"
-                target="_blank"
-                rel="noopener noreferrer">
-               ไปยังลิงก์ภายนอก / สั่งซื้อ ↗
-             </a>
-           </p>`
-        : ""
-    }
-  `;
-
+    ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ไปยังลิงก์ภายนอก / สั่งซื้อ ↗</a></p>`:""}`;
   showView("detail");
 }
-
-// =========================================================
-// RECOMMENDED
-// =========================================================
-
-async function loadRecommended() {
-  const result = await sb
-    .from("promotions")
-    .select("*, products(name,icon)")
-    .eq("active", true)
-    .eq("category", "recommended")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false });
-
-  if (result.error) {
-    console.error("Recommended:", result.error);
-    state.recommended = [];
-  } else {
-    state.recommended = result.data || [];
-  }
-
-  renderRecommended();
-}
-
-function renderRecommended() {
-  const section = $("#recommendedSection");
-  const grid = $("#recommendedGrid");
-
-  if (!section || !grid) return;
-
-  if (!state.recommended.length) {
-    section.hidden = true;
-    grid.innerHTML = "";
-    return;
-  }
-
-  section.hidden = false;
-
-  grid.innerHTML = state.recommended.map((item) => `
-    <article class="recommendation-card glass">
-      ${
-        item.image_url
-          ? `<img class="recommendation-image"
-                  src="${escapeHtml(item.image_url)}"
-                  alt="${escapeHtml(item.title)}"
-                  loading="lazy">`
-          : ""
-      }
-
-      <div class="card-body">
-        <span class="badge">
-          🎬 ${mixedText(item.products?.name || item.platform || "แนะนำ")}
-        </span>
-        <h3>${mixedText(item.title)}</h3>
-        <p>${mixedText(item.description || "")}</p>
-
-        ${
-          item.external_url
-            ? `<a class="external-link"
-                  href="${escapeHtml(item.external_url)}"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                ดูเพิ่มเติม ↗
-              </a>`
-            : ""
-        }
-      </div>
-    </article>
-  `).join("");
-}
-
-// =========================================================
-// SOCIAL LINKS
-// =========================================================
-
-async function loadSocialLinks() {
-  const result = await sb
-    .from("social_links")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
-
-  if (result.error) {
-    console.error("Social links:", result.error);
-    state.socialLinks = [];
-    renderSocialLinks([]);
-    return;
-  }
-
-  state.socialLinks = result.data || [];
-  renderSocialLinks(state.socialLinks);
-}
-
-function renderSocialLinks(items) {
-  const container = $("#socialLinks");
-  const contactGrid = $("#contactGrid");
-
-  if (container) {
-    container.innerHTML = items.map((item) => `
-      <a
-        class="social-link"
-        href="${escapeHtml(item.external_url)}"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="${escapeHtml(item.name)}"
-        title="${escapeHtml(item.name)}"
-      >
-        ${
-          item.icon_url
-            ? `<img src="${escapeHtml(item.icon_url)}"
-                    alt="${escapeHtml(item.name)}">`
-            : `<span>${escapeHtml(item.name.slice(0, 1))}</span>`
-        }
-      </a>
-    `).join("");
-  }
-
-  if (contactGrid) {
-    contactGrid.innerHTML = items.map((item) => `
-      <a
-        class="contact-link"
-        href="${escapeHtml(item.external_url)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        ${
-          item.icon_url
-            ? `<img src="${escapeHtml(item.icon_url)}"
-                    alt="${escapeHtml(item.name)}">`
-            : ""
-        }
-        <span>${mixedText(item.name)}</span>
-      </a>
-    `).join("") || `<div class="empty">ยังไม่มีช่องทางติดต่อ</div>`;
-  }
-}
-
-// =========================================================
-// SITE SETTINGS / BACKGROUND
-// =========================================================
-
-async function loadSiteSettings() {
-  const result = await sb
-    .from("site_settings")
-    .select("*")
-    .eq("id", 1)
-    .maybeSingle();
-
-  if (result.error) {
-    console.error("Site settings:", result.error);
-    applySiteTheme(DEFAULT_THEME);
-    return;
-  }
-
-  state.settings = result.data || DEFAULT_THEME;
-  applySiteTheme(state.settings);
-}
-
-function applySiteTheme(settings = DEFAULT_THEME) {
-  const root = document.documentElement;
-
-  const accent = settings.accent_color || DEFAULT_THEME.accent_color;
-  const secondary =
-    settings.secondary_color || DEFAULT_THEME.secondary_color;
-
-  root.style.setProperty("--accent-color", accent);
-  root.style.setProperty("--secondary-color", secondary);
-
-  if (settings.background_image) {
-    document.body.style.backgroundImage =
-      `url("${settings.background_image}")`;
-  } else {
-    document.body.style.backgroundImage = "";
-  }
-
-  const preview = $("#backgroundPreview");
-  if (preview) {
-    if (settings.background_image) {
-      preview.style.backgroundImage =
-        `url("${settings.background_image}")`;
-      preview.innerHTML = "";
-    } else {
-      preview.style.backgroundImage =
-        "linear-gradient(135deg,#dff6ff,#f2e5ff,#ffe5f1)";
-      preview.innerHTML = "<span>ยังไม่มีรูปพื้นหลัง</span>";
-    }
-  }
-
-  const accentInput = $("#accentColor");
-  const secondaryInput = $("#secondaryColor");
-
-  if (accentInput) accentInput.value = accent;
-  if (secondaryInput) secondaryInput.value = secondary;
-}
-
-async function saveTheme() {
-  const file = $("#backgroundFile")?.files?.[0];
-  const accent = $("#accentColor")?.value || DEFAULT_THEME.accent_color;
-  const secondary =
-    $("#secondaryColor")?.value || DEFAULT_THEME.secondary_color;
-
-  try {
-    let backgroundUrl = state.settings?.background_image || null;
-
-    if (file) {
-      backgroundUrl = await uploadImage(file, "background");
-    }
-
-    const payload = {
-      id: 1,
-      background_image: backgroundUrl,
-      accent_color: accent,
-      secondary_color: secondary,
-      updated_at: new Date().toISOString()
-    };
-
-    const result = await sb
-      .from("site_settings")
-      .upsert(payload, { onConflict: "id" });
-
-    if (result.error) throw result.error;
-
-    state.settings = payload;
-    applySiteTheme(payload);
-
-    $("#backgroundFile").value = "";
-    toast("บันทึกพื้นหลังและธีมแล้ว");
-  } catch (error) {
-    console.error(error);
-    toast(error.message || "บันทึกธีมไม่สำเร็จ");
-  }
-}
-
-async function removeBackground() {
-  if (!confirm("ลบรูปพื้นหลังและกลับธีมเริ่มต้นหรือไม่?")) return;
-
-  const payload = {
-    id: 1,
-    background_image: null,
-    accent_color: DEFAULT_THEME.accent_color,
-    secondary_color: DEFAULT_THEME.secondary_color,
-    updated_at: new Date().toISOString()
-  };
-
-  const result = await sb
-    .from("site_settings")
-    .upsert(payload, { onConflict: "id" });
-
-  if (result.error) {
-    toast(result.error.message);
-    return;
-  }
-
-  state.settings = payload;
-  applySiteTheme(payload);
-  toast("กลับสู่ธีมเริ่มต้นแล้ว");
-}
-
-// =========================================================
-// NAVIGATION / SEARCH / HIDDEN ADMIN
-// =========================================================
-
 const searchInput = $("#search");
 
 if (searchInput) {
-  searchInput.addEventListener("input", (event) => {
-    const query = event.target.value.toLowerCase().trim();
+  searchInput.addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
 
     renderProducts(
-      state.products.filter((product) =>
-        `${product.name || ""} ${product.short_description || ""}`
+      state.products.filter(p =>
+        `${p.name} ${p.short_description}`
           .toLowerCase()
-          .includes(query)
+          .includes(q)
       )
     );
   });
 }
 
-$$("[data-view]").forEach((button) => {
-  button.addEventListener("click", () => {
-    showView(button.dataset.view);
-  });
-});
 
-$$(".close").forEach((button) => {
-  button.addEventListener("click", () => {
-    closeDialog(button.dataset.close);
-  });
-});
+$$("[data-view]").forEach(b =>
+  b.addEventListener("click", () =>
+    showView(b.dataset.view)
+  )
+);
+
+
+$$(".close").forEach(b =>
+  b.addEventListener("click", () =>
+    closeDialog(b.dataset.close)
+  )
+);
+
 
 let brandClicks = 0;
-let brandTimer = null;
+let brandTimer;
+
 
 const brandButton = $("#brand");
 
 if (brandButton) {
+
   brandButton.addEventListener("click", async () => {
-    brandClicks += 1;
+
+    brandClicks++;
 
     clearTimeout(brandTimer);
-    brandTimer = setTimeout(() => {
+
+    brandTimer = setTimeout(
+      () => brandClicks = 0,
+      1800
+    );
+
+
+    if (brandClicks >= 5) {
+
       brandClicks = 0;
-    }, 1800);
 
-    if (brandClicks < 5) return;
+      const {
+        data: { session }
+      } = await sb.auth.getSession();
 
-    brandClicks = 0;
 
-    const { data } = await sb.auth.getSession();
+      if (session) {
 
-    if (data?.session) {
-      await enterAdmin();
-    } else {
-      openDialog("authDialog");
+        await enterAdmin();
+
+      } else {
+
+        openDialog("authDialog");
+
+      }
+
     }
+
   });
+
 }
 
-// =========================================================
-// AUTH / ADMIN
-// =========================================================
 
 const loginForm = $("#loginForm");
 
 if (loginForm) {
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
 
-    const email = $("#loginEmail")?.value?.trim();
-    const password = $("#loginPassword")?.value || "";
+  loginForm.addEventListener("submit", async e => {
 
-    const result = await sb.auth.signInWithPassword({
-      email,
-      password
-    });
+    e.preventDefault();
 
-    if (result.error) {
-      toast(result.error.message);
-      return;
+    const { error } =
+      await sb.auth.signInWithPassword({
+
+        email:
+          $("#loginEmail").value,
+
+        password:
+          $("#loginPassword").value
+
+      });
+
+
+    if (error) {
+
+      return toast(error.message);
+
     }
+
 
     closeDialog("authDialog");
+
     await enterAdmin();
+
   });
+
+}
+$("#logoutBtn").addEventListener("click",async()=>{await sb.auth.signOut();state.isAdmin=false;showView("home");toast("ออกจากระบบแล้ว");});
+
+async function enterAdmin(){
+  const {data:{session}}=await sb.auth.getSession(); if(!session)return;
+  const {data,error}=await sb.from("admin_users").select("user_id").eq("user_id",session.user.id).maybeSingle();
+  if(error||!data){await sb.auth.signOut();return toast("บัญชีนี้ไม่มีสิทธิ์ Admin");}
+  state.isAdmin=true; await loadAdminData(); showView("admin");
 }
 
-async function enterAdmin() {
-  const { data: sessionData } = await sb.auth.getSession();
-  const session = sessionData?.session;
+$$(".tab").forEach(t=>t.addEventListener("click",()=>{
+  $$(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active");
+  $$(".admin-panel").forEach(x=>x.classList.remove("active")); $("#admin"+t.dataset.adminTab[0].toUpperCase()+t.dataset.adminTab.slice(1)).classList.add("active");
+}));
 
-  if (!session) {
-    openDialog("authDialog");
-    return;
-  }
-
-  const result = await sb
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", session.user.id)
-    .maybeSingle();
-
-  if (result.error || !result.data) {
-    await sb.auth.signOut();
-    toast("บัญชีนี้ไม่มีสิทธิ์ Admin");
-    return;
-  }
-
-  state.isAdmin = true;
-  await loadAdminData();
-  showView("admin");
-}
-
-const logoutButton = $("#logoutBtn");
-
-if (logoutButton) {
-  logoutButton.addEventListener("click", async () => {
-    await sb.auth.signOut();
-    state.isAdmin = false;
-    showView("home");
-    toast("ออกจากระบบแล้ว");
-  });
-}
-
-const previewButton = $("#previewStoreBtn");
-
-if (previewButton) {
-  previewButton.addEventListener("click", () => {
-    showView("home");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-}
-
-// =========================================================
-// ADMIN TABS
-// =========================================================
-
-$$(".tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    $$(".tab").forEach((item) => item.classList.remove("active"));
-    tab.classList.add("active");
-
-    $$(".admin-panel").forEach((panel) => panel.classList.remove("active"));
-
-    const panelId =
-      "admin" +
-      tab.dataset.adminTab.charAt(0).toUpperCase() +
-      tab.dataset.adminTab.slice(1);
-
-    const panel = $("#" + panelId);
-    if (panel) panel.classList.add("active");
-  });
-});
-
-// =========================================================
-// ADMIN DATA
-// =========================================================
-
-async function loadAdminData() {
-  const [products, promotions, combos, recommended, social] =
-    await Promise.all([
-      sb.from("products")
-        .select("*, packages(*)")
-        .order("sort_order"),
-
-      sb.from("promotions")
-        .select("*")
-        .order("created_at", { ascending: false }),
-
-      sb.from("combos")
-        .select("*, combo_items(product_id, package_id)")
-        .order("created_at", { ascending: false }),
-
-      sb.from("promotions")
-        .select("*")
-        .eq("category", "recommended")
-        .order("sort_order", { ascending: true }),
-
-      sb.from("social_links")
-        .select("*")
-        .order("sort_order", { ascending: true })
-    ]);
-
-  if (products.error) console.error(products.error);
-  if (promotions.error) console.error(promotions.error);
-  if (combos.error) console.error(combos.error);
-  if (recommended.error) console.error(recommended.error);
-  if (social.error) console.error(social.error);
-
-  state.adminProducts = products.data || [];
-  state.adminPromotions = (promotions.data || []).filter(
-    (item) => (item.category || "promotion") === "promotion"
-  );
-  state.adminCombos = combos.data || [];
-  state.adminRecommended = recommended.data || [];
-  state.adminSocialLinks = social.data || [];
-
+async function loadAdminData(){
+  const [p,pr,c]=await Promise.all([
+    sb.from("products").select("*, packages(*)").order("sort_order"),
+    sb.from("promotions").select("*").order("created_at",{ascending:false}),
+    sb.from("combos").select("*, combo_items(product_id, package_id)").order("created_at",{ascending:false})
+  ]);
+  state.adminProducts=p.data||[];
+  state.adminPromotions=pr.data||[];
+  state.adminCombos=(c.data||[]).map(enrichCombo);
   renderAdmin();
-  renderAdminRecommended();
-  renderAdminSocial();
-  applySiteTheme(state.settings || DEFAULT_THEME);
 }
 
-function adminRow(title, active, editAction, deleteAction, extra = "") {
-  return `
-    <div class="admin-row glass">
-      <div>
-        <b>${title}</b>
-        <p>${active ? "🟢 แสดง" : "⚪ ซ่อน"} ${extra}</p>
-      </div>
+function renderAdmin(){
+  $("#adminProductList").innerHTML=state.adminProducts.map(p=>adminRow(`${p.icon||"📱"} ${p.name}`,p.active,`editProduct('${p.id}')`,`deleteProduct('${p.id}')`)).join("")||"<div class='empty'>ไม่มีสินค้า</div>";
+  $("#adminPromoList").innerHTML=state.adminPromotions.map(p=>adminRow(`🎁 ${p.title}`,p.active,`editPromo('${p.id}')`,`deletePromo('${p.id}')`)).join("")||"<div class='empty'>ไม่มีโปรโมชั่น</div>";
+  $("#adminComboList").innerHTML=state.adminCombos.map(c=>adminRow(`🤝 ${c.name} — ฿${money(c.sale_price)}`,c.active,`editCombo('${c.id}')`,`deleteCombo('${c.id}')`)).join("")||"<div class='empty'>ไม่มี Combo</div>";
+}
+function adminRow(title,active,edit,del){return `<div class="admin-row glass"><div><b>${escapeHtml(title)}</b><p>${active?"🟢 แสดง":"⚪ ซ่อน"}</p></div><div class="admin-actions"><button class="small" onclick="${edit}">✏️ แก้ไข</button><button class="small danger" onclick="${del}">🗑 ลบ</button></div></div>`;}
 
-      <div class="admin-actions">
-        <button type="button" class="small"
-                onclick="${editAction}">
-          ✏️ แก้ไข
-        </button>
-
-        <button type="button" class="small danger"
-                onclick="${deleteAction}">
-          🗑️ ลบ
-        </button>
-      </div>
-    </div>
-  `;
+async function uploadImage(file,folder="images"){
+  if(!file)return null;
+  const ext=file.name.split(".").pop(); const path=`${folder}/${crypto.randomUUID()}.${ext}`;
+  const {error}=await sb.storage.from("media").upload(path,file,{upsert:false});
+  if(error)throw error;
+  return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
 }
 
-function renderAdmin() {
-  const productList = $("#adminProductList");
-  const promoList = $("#adminPromoList");
-  const comboList = $("#adminComboList");
-
-  if (productList) {
-    const sortedProducts = [...state.adminProducts].sort((a, b) => {
-      const ao = Number(a.sort_order ?? 0);
-      const bo = Number(b.sort_order ?? 0);
-      if (ao !== bo) return ao - bo;
-      return String(a.name || "").localeCompare(String(b.name || ""), "th");
-    });
-
-    productList.innerHTML =
-      sortedProducts.map((product, index) =>
-        adminRow(
-          `${escapeHtml(product.icon || "📱")} ${mixedText(product.name)}`,
-          product.active,
-          `editProduct('${product.id}')`,
-          `deleteProduct('${product.id}')`,
-          `• ลำดับ ${index + 1}`
-        )
-      ).join("") || `<div class="empty">ไม่มีสินค้า</div>`;
-  }
-
-  if (promoList) {
-    promoList.innerHTML =
-      state.adminPromotions.map((promo) =>
-        adminRow(
-          `🎁 ${mixedText(promo.title)}`,
-          promo.active,
-          `editPromo('${promo.id}')`,
-          `deletePromo('${promo.id}')`
-        )
-      ).join("") || `<div class="empty">ไม่มีโปรโมชั่น</div>`;
-  }
-
-  if (comboList) {
-    comboList.innerHTML =
-      state.adminCombos.map((combo) =>
-        adminRow(
-          `🤝 ${mixedText(combo.name)} — ฿${money(combo.sale_price)}`,
-          combo.active,
-          `editCombo('${combo.id}')`,
-          `deleteCombo('${combo.id}')`
-        )
-      ).join("") || `<div class="empty">ไม่มี Combo</div>`;
-  }
-}
-
-// =========================================================
-// STORAGE
-// =========================================================
-
-async function uploadImage(file, folder = "images") {
-  if (!file) return null;
-
-  const extension =
-    file.name.split(".").pop()?.toLowerCase() || "jpg";
-
-  const path =
-    `${folder}/${crypto.randomUUID()}.${extension}`;
-
-  const result = await sb.storage
-    .from("media")
-    .upload(path, file, {
-      upsert: false,
-      contentType: file.type || undefined
-    });
-
-  if (result.error) throw result.error;
-
-  return sb.storage
-    .from("media")
-    .getPublicUrl(path)
-    .data
-    .publicUrl;
-}
-
-// =========================================================
-// PRODUCT CRUD
-// =========================================================
-
-const addProductButton = $("#addProductBtn");
-
-if (addProductButton) {
-  addProductButton.addEventListener("click", () => {
-    resetProductForm();
-    openDialog("productDialog");
-  });
-}
-
-function packageRow(data = { name: "", price: "" }) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "package-row";
-
-  wrapper.innerHTML = `
-    <input class="pkg-name"
-           placeholder="ชื่อแพ็กเกจ"
-           value="${escapeHtml(data.name || "")}">
-
-    <input class="pkg-price"
-           type="number"
-           min="0"
-           step="0.01"
-           placeholder="ราคา"
-           value="${escapeHtml(data.price ?? "")}">
-
-    <button type="button" class="small danger">×</button>
-  `;
-
-  wrapper.querySelector("button").addEventListener("click", () => {
-    wrapper.remove();
-  });
-
-  $("#packageRows")?.appendChild(wrapper);
-}
-
-$("#addPackageRow")?.addEventListener("click", () => packageRow());
-
-function resetProductForm() {
-  $("#productForm")?.reset();
-
-  if ($("#productId")) $("#productId").value = "";
-  if ($("#packageRows")) $("#packageRows").innerHTML = "";
-  if ($("#pCurrentImage")) $("#pCurrentImage").hidden = true;
-
-  const nextOrder = state.adminProducts.length + 1;
-  if ($("#pSortOrder")) $("#pSortOrder").value = nextOrder;
-
-  packageRow();
-  if ($("#productFormTitle")) $("#productFormTitle").textContent = "เพิ่มสินค้า";
-}
-
-window.editProduct = (id) => {
-  const product = state.adminProducts.find((item) => item.id === id);
-  if (!product) return;
-
-  resetProductForm();
-
-  $("#productId").value = product.id;
-  $("#pName").value = product.name || "";
-  $("#pIcon").value = product.icon || "";
-  $("#pShort").value = product.short_description || "";
-  $("#pDescription").value = product.description || "";
-  $("#pLink").value = product.external_url || "";
-  $("#pActive").checked = !!product.active;
-
-  const sortedForPosition = [...state.adminProducts].sort((a, b) => {
-    const ao = Number(a.sort_order ?? 0);
-    const bo = Number(b.sort_order ?? 0);
-    if (ao !== bo) return ao - bo;
-    return String(a.name || "").localeCompare(String(b.name || ""), "th");
-  });
-  const currentPosition = sortedForPosition.findIndex((item) => item.id === product.id) + 1;
-  $("#pSortOrder").value = currentPosition > 0 ? currentPosition : 1;
-
-  if ($("#pCurrentImage")) {
-    $("#pCurrentImage").hidden = !product.image_url;
-  }
-
-  $("#packageRows").innerHTML = "";
-  (product.packages || []).forEach(packageRow);
-
-  $("#productFormTitle").textContent = "แก้ไขสินค้า";
-  openDialog("productDialog");
+// PRODUCT
+$("#addProductBtn").onclick=()=>{resetProductForm();openDialog("productDialog");};
+function packageRow(data={name:"",price:""}){const d=document.createElement("div");d.className="package-row";d.innerHTML=`<input class="pkg-name" placeholder="ชื่อแพ็กเกจ" value="${escapeHtml(data.name)}"><input class="pkg-price" type="number" min="0" placeholder="ราคา" value="${data.price??""}"><button type="button" class="small danger">×</button>`;d.querySelector("button").onclick=()=>d.remove();$("#packageRows").appendChild(d);}
+$("#addPackageRow").onclick=()=>packageRow();
+function resetProductForm(){ $("#productForm").reset();$("#productId").value="";$("#packageRows").innerHTML="";packageRow();$("#productFormTitle").textContent="เพิ่มสินค้า"; }
+window.editProduct=id=>{
+  const p=state.adminProducts.find(x=>x.id===id);resetProductForm();$("#productId").value=p.id;$("#pName").value=p.name;$("#pIcon").value=p.icon||"";$("#pShort").value=p.short_description||"";$("#pDescription").value=p.description||"";$("#pLink").value=p.external_url||"";$("#pActive").checked=p.active;$("#packageRows").innerHTML="";(p.packages||[]).forEach(packageRow);$("#productFormTitle").textContent="แก้ไขสินค้า";openDialog("productDialog");
 };
-
-$("#productForm")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  try {
-    const id = $("#productId").value;
-    const file = $("#pImage").files[0];
-    const currentProduct = id
-      ? state.adminProducts.find((item) => item.id === id)
-      : null;
-
-    let imageUrl = null;
-
-    if (file) {
-      imageUrl = await uploadImage(file, "products");
-    }
-
-    const requestedOrder = Math.max(
-      1,
-      Number($("#pSortOrder").value || state.adminProducts.length + 1)
-    );
-
-    const payload = {
-      name: $("#pName").value.trim(),
-      icon: $("#pIcon").value.trim(),
-      short_description: $("#pShort").value.trim(),
-      description: $("#pDescription").value,
-      external_url: $("#pLink").value.trim() || null,
-      active: $("#pActive").checked
-    };
-
-    if (!isValidExternalUrl(payload.external_url)) {
-      throw new Error("ลิงก์สินค้าต้องเป็น http:// หรือ https://");
-    }
-
-    // If no new image is selected while editing, image_url is intentionally
-    // omitted so Supabase keeps the existing image URL.
-    if (imageUrl) payload.image_url = imageUrl;
-
-    let productId = id;
-
-    if (id) {
-      const result = await sb
-        .from("products")
-        .update(payload)
-        .eq("id", id);
-
-      if (result.error) throw result.error;
-
-      await sb.from("packages").delete().eq("product_id", id);
-    } else {
-      // Insert at a temporary order first. This avoids collisions with existing
-      // sort_order values before we normalize the final positions.
-      const maxExistingOrder = Math.max(
-        0,
-        ...state.adminProducts.map((item) => Number(item.sort_order || 0))
-      );
-      const temporaryOrder = maxExistingOrder + state.adminProducts.length + 1000;
-
-      const result = await sb
-        .from("products")
-        .insert({ ...payload, sort_order: temporaryOrder })
-        .select()
-        .single();
-
-      if (result.error) throw result.error;
-
-      productId = result.data.id;
-    }
-
-    await setProductOrder(productId, requestedOrder);
-
-    const packages = $$(".package-row")
-      .map((row) => ({
-        product_id: productId,
-        name: row.querySelector(".pkg-name").value.trim(),
-        price: Number(row.querySelector(".pkg-price").value || 0)
-      }))
-      .filter((item) => item.name);
-
-    if (packages.length) {
-      const result = await sb.from("packages").insert(packages);
-      if (result.error) throw result.error;
-    }
-
-    closeDialog("productDialog");
-    await refreshAll();
-    toast("บันทึกสินค้าแล้ว");
-  } catch (error) {
-    console.error(error);
-    toast(error.message || "บันทึกสินค้าไม่สำเร็จ");
-  }
+$("#productForm").addEventListener("submit",async e=>{
+  e.preventDefault(); try{
+    const id=$("#productId").value; let imageUrl=null; const file=$("#pImage").files[0]; if(file) imageUrl=await uploadImage(file,"products");
+    const payload={name:$("#pName").value,icon:$("#pIcon").value,short_description:$("#pShort").value,description:$("#pDescription").value,external_url:$("#pLink").value||null,active:$("#pActive").checked};
+    if(imageUrl)payload.image_url=imageUrl;
+    let productId=id;
+    if(id){const {error}=await sb.from("products").update(payload).eq("id",id);if(error)throw error;await sb.from("packages").delete().eq("product_id",id);}
+    else {const {data,error}=await sb.from("products").insert(payload).select().single();if(error)throw error;productId=data.id;}
+    const pkgs=$$(".package-row").map(r=>({product_id:productId,name:r.querySelector(".pkg-name").value,price:Number(r.querySelector(".pkg-price").value||0)})).filter(x=>x.name);
+    if(pkgs.length){const {error}=await sb.from("packages").insert(pkgs);if(error)throw error;}
+    closeDialog("productDialog");await loadAll();await loadAdminData();toast("บันทึกสินค้าแล้ว");
+  }catch(err){toast(err.message);}
 });
+window.deleteProduct=async id=>{if(!confirm("ลบสินค้านี้?"))return;const {error}=await sb.from("products").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
 
-async function setProductOrder(productId, requestedPosition) {
-  const result = await sb
-    .from("products")
-    .select("id, sort_order, created_at")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+// PROMOTION / poster / external link
+$("#addPromoBtn").onclick=()=>{resetPromoForm();openDialog("promoDialog");};
+function fillProductSelects(){
+  const opts=state.adminProducts.map(p=>`<option value="${p.id}">${escapeHtml(p.icon||"📱")} ${escapeHtml(p.name)}</option>`).join("");
+  $("#promoProduct").innerHTML=opts;
+  populateComboProductSelectors();
+}
+function resetPromoForm(){ $("#promoForm").reset();$("#promoId").value="";fillProductSelects();$("#promoFormTitle").textContent="เพิ่มโปรโมชั่น"; }
 
-  if (result.error) throw result.error;
-
-  const items = [...(result.data || [])];
-  const currentIndex = items.findIndex((item) => item.id === productId);
-  if (currentIndex < 0) return;
-
-  const [current] = items.splice(currentIndex, 1);
-  const targetIndex = Math.min(
-    Math.max(Number(requestedPosition || 1) - 1, 0),
-    items.length
-  );
-  items.splice(targetIndex, 0, current);
-
-  // Phase 1: move every row to unique temporary values above the current max.
-  // This works even when sort_order has a UNIQUE constraint and prevents
-  // duplicate-key errors while swapping positions.
-  const maxOrder = Math.max(0, ...items.map((item) => Number(item.sort_order || 0)));
-  const tempBase = maxOrder + items.length + 1000;
-
-  for (let index = 0; index < items.length; index += 1) {
-    const tempResult = await sb
-      .from("products")
-      .update({ sort_order: tempBase + index })
-      .eq("id", items[index].id);
-    if (tempResult.error) throw tempResult.error;
-  }
-
-  // Phase 2: normalize to 1,2,3,...
-  for (let index = 0; index < items.length; index += 1) {
-    const finalResult = await sb
-      .from("products")
-      .update({ sort_order: index + 1 })
-      .eq("id", items[index].id);
-    if (finalResult.error) throw finalResult.error;
-  }
+function comboProductOptions(selected=""){
+  return `<option value="">เลือกสินค้า</option>`+state.adminProducts.map(p=>`<option value="${p.id}" ${String(selected)===String(p.id)?"selected":""}>${escapeHtml(p.icon||"📱")} ${escapeHtml(p.name)}</option>`).join("");
+}
+function comboPackageOptions(productId, selected=""){
+  const p=state.adminProducts.find(x=>String(x.id)===String(productId));
+  return `<option value="">เลือกแพ็กเกจ</option>`+(p?.packages||[]).map(x=>`<option value="${x.id}" ${String(selected)===String(x.id)?"selected":""}>${escapeHtml(x.name)} — ฿${money(x.price)}</option>`).join("");
+}
+function populateComboProductSelectors(values=[{},{}]){
+  ["1","2"].forEach((n,i)=>{
+    const row=$(`#comboItem${n}`);
+    if(!row)return;
+    const item=values[i]||{};
+    $(`#comboProduct${n}`).innerHTML=comboProductOptions(item.product_id);
+    $(`#comboPackage${n}`).innerHTML=comboPackageOptions(item.product_id,item.package_id);
+  });
 }
 
-window.deleteProduct = async (id) => {
-  if (!confirm("ลบสินค้านี้?")) return;
+window.editPromo=id=>{const p=state.adminPromotions.find(x=>x.id===id);resetPromoForm();$("#promoId").value=p.id;$("#promoProduct").value=p.product_id||"";$("#promoTitle").value=p.title;$("#promoDescription").value=p.description||"";$("#promoLink").value=p.external_url||"";$("#promoActive").checked=p.active;$("#promoFormTitle").textContent="แก้ไขโปรโมชั่น";openDialog("promoDialog");};
+$("#promoForm").addEventListener("submit",async e=>{e.preventDefault();try{
+  const id=$("#promoId").value;let imageUrl=null;const file=$("#promoImage").files[0];if(file)imageUrl=await uploadImage(file,"posters");
+  const payload={product_id:$("#promoProduct").value||null,title:$("#promoTitle").value,description:$("#promoDescription").value,external_url:$("#promoLink").value||null,active:$("#promoActive").checked};if(imageUrl)payload.image_url=imageUrl;
+  const q=id?sb.from("promotions").update(payload).eq("id",id):sb.from("promotions").insert(payload);const {error}=await q;if(error)throw error;
+  closeDialog("promoDialog");await loadAll();await loadAdminData();toast("บันทึกโปรโมชั่นแล้ว");
+}catch(err){toast(err.message);}});
+window.deletePromo=async id=>{if(!confirm("ลบโปรโมชั่น?"))return;const {error}=await sb.from("promotions").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
 
-  const result = await sb
-    .from("products")
-    .delete()
-    .eq("id", id);
-
-  if (result.error) {
-    toast(result.error.message);
-    return;
-  }
-
-  // Close gaps so the remaining products keep a clean 1,2,3... order.
-  const remaining = await sb
-    .from("products")
-    .select("id")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (!remaining.error) {
-    for (let index = 0; index < (remaining.data || []).length; index += 1) {
-      await sb.from("products").update({ sort_order: index + 1 }).eq("id", remaining.data[index].id);
-    }
-  }
-
-  await refreshAll();
-  toast("ลบสินค้าแล้ว");
-};
-
-// =========================================================
-// PROMOTION CRUD
-// =========================================================
-
-$("#addPromoBtn")?.addEventListener("click", () => {
-  resetPromoForm();
-  openDialog("promoDialog");
-});
-
-function fillProductSelects() {
-  const options = state.adminProducts.map((product) => `
-    <option value="${escapeHtml(product.id)}">
-      ${escapeHtml(product.icon || "📱")} ${escapeHtml(product.name)}
-    </option>
-  `).join("");
-
-  if ($("#promoProduct")) $("#promoProduct").innerHTML = options;
-  if ($("#comboProducts")) $("#comboProducts").innerHTML = options;
-}
-
-function resetPromoForm() {
-  $("#promoForm")?.reset();
-  $("#promoId").value = "";
+// COMBO — exactly 2 products, one selected package per product
+$("#addComboBtn").onclick=()=>{resetComboForm();openDialog("comboDialog");};
+function resetComboForm(){
+  $("#comboForm").reset();
+  $("#comboId").value="";
   fillProductSelects();
-  $("#promoFormTitle").textContent = "เพิ่มโปรโมชั่น";
+  populateComboProductSelectors([{},{}]);
+  $("#comboFormTitle").textContent="สร้าง Combo ลดราคา";
 }
-
-window.editPromo = (id) => {
-  const promo = state.adminPromotions.find((item) => item.id === id);
-  if (!promo) return;
-
-  resetPromoForm();
-
-  $("#promoId").value = promo.id;
-  $("#promoProduct").value = promo.product_id || "";
-  $("#promoTitle").value = promo.title || "";
-  $("#promoDescription").value = promo.description || "";
-  $("#promoLink").value = promo.external_url || "";
-  $("#promoActive").checked = !!promo.active;
-
-  $("#promoFormTitle").textContent = "แก้ไขโปรโมชั่น";
-  openDialog("promoDialog");
-};
-
-$("#promoForm")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  try {
-    const id = $("#promoId").value;
-    const file = $("#promoImage").files[0];
-
-    let imageUrl = null;
-
-    if (file) imageUrl = await uploadImage(file, "posters");
-
-    const payload = {
-      product_id: $("#promoProduct").value || null,
-      title: $("#promoTitle").value.trim(),
-      description: $("#promoDescription").value,
-      external_url: $("#promoLink").value.trim() || null,
-      active: $("#promoActive").checked,
-      category: "promotion"
-    };
-
-    if (!isValidExternalUrl(payload.external_url)) {
-      throw new Error("ลิงก์โปรโมชั่นต้องเป็น http:// หรือ https://");
-    }
-
-    if (imageUrl) payload.image_url = imageUrl;
-
-    const result = id
-      ? await sb.from("promotions").update(payload).eq("id", id)
-      : await sb.from("promotions").insert(payload);
-
-    if (result.error) throw result.error;
-
-    closeDialog("promoDialog");
-    await refreshAll();
-    toast("บันทึกโปรโมชั่นแล้ว");
-  } catch (error) {
-    console.error(error);
-    toast(error.message || "บันทึกโปรโมชั่นไม่สำเร็จ");
-  }
-});
-
-window.deletePromo = async (id) => {
-  if (!confirm("ลบโปรโมชั่น?")) return;
-
-  const result = await sb
-    .from("promotions")
-    .delete()
-    .eq("id", id);
-
-  if (result.error) {
-    toast(result.error.message);
-    return;
-  }
-
-  await refreshAll();
-  toast("ลบโปรโมชั่นแล้ว");
-};
-
-// =========================================================
-// COMBO CRUD
-// =========================================================
-
-$("#addComboBtn")?.addEventListener("click", () => {
+window.editCombo=id=>{
+  const c=state.adminCombos.find(x=>String(x.id)===String(id)); if(!c)return;
   resetComboForm();
-  openDialog("comboDialog");
-});
-
-function renderComboPackageSelectors(selectedItems = []) {
-  const wrap = $("#comboPackageSelectors");
-  if (!wrap) return;
-
-  const products = state.adminProducts || [];
-  const rows = [0, 1].map((index) => {
-    const current = selectedItems[index] || {};
-    const product = products.find((p) => p.id === current.product_id) || products[0];
-    const productId = current.product_id || product?.id || "";
-    const packageOptions = (products.find((p) => p.id === productId)?.packages || []).map((pkg) =>
-      `<option value="${escapeHtml(pkg.id)}" ${pkg.id === current.package_id ? "selected" : ""}>${escapeHtml(pkg.name || "แพ็กเกจ")} — ฿${money(pkg.price)}</option>`
-    ).join("");
-
-    const productOptions = products.map((p) =>
-      `<option value="${escapeHtml(p.id)}" ${p.id === productId ? "selected" : ""}>${escapeHtml(p.icon || "📱")} ${escapeHtml(p.name)}</option>`
-    ).join("");
-
-    return `
-      <div class="combo-package-row" data-index="${index}">
-        <strong>แพ็กเกจที่ ${index + 1}</strong>
-        <label>เลือกสินค้า<select class="combo-package-product" required>${productOptions}</select></label>
-        <label>เลือกแพ็กเกจ<select class="combo-package-select" required>${packageOptions}</select></label>
-      </div>
-    `;
-  }).join("");
-
-  wrap.innerHTML = rows;
-  $$(".combo-package-product", wrap).forEach((select) => {
-    select.addEventListener("change", () => {
-      const row = select.closest(".combo-package-row");
-      const packageSelect = row.querySelector(".combo-package-select");
-      const product = products.find((p) => p.id === select.value);
-      packageSelect.innerHTML = (product?.packages || []).map((pkg) =>
-        `<option value="${escapeHtml(pkg.id)}">${escapeHtml(pkg.name || "แพ็กเกจ")} — ฿${money(pkg.price)}</option>`
-      ).join("");
-    });
-  });
-}
-
-function getComboSelectedPackages() {
-  return $$("#comboPackageSelectors .combo-package-row").map((row) => ({
-    product_id: row.querySelector(".combo-package-product")?.value || "",
-    package_id: row.querySelector(".combo-package-select")?.value || ""
-  })).filter((item) => item.product_id && item.package_id);
-}
-
-function resetComboForm() {
-  $("#comboForm")?.reset();
-  $("#comboId").value = "";
-  fillProductSelects();
-  renderComboPackageSelectors([]);
-  $("#comboFormTitle").textContent = "สร้าง Combo ลดราคา";
-}
-
-window.editCombo = (id) => {
-  const combo = state.adminCombos.find((item) => item.id === id);
-  if (!combo) return;
-
-  resetComboForm();
-
-  $("#comboId").value = combo.id;
-  $("#comboName").value = combo.name || "";
-  $("#comboDescription").value = combo.description || "";
-  $("#comboOriginalPrice").value = combo.original_price || "";
-  $("#comboSalePrice").value = combo.sale_price || "";
-  $("#comboLink").value = combo.external_url || "";
-  $("#comboActive").checked = !!combo.active;
-  renderComboPackageSelectors(combo.combo_items || []);
-
-  $("#comboFormTitle").textContent = "แก้ไข Combo";
+  $("#comboId").value=c.id;
+  $("#comboName").value=c.name||"";
+  $("#comboDescription").value=c.description||"";
+  $("#comboOriginalPrice").value=c.original_price??"";
+  $("#comboSalePrice").value=c.sale_price??"";
+  $("#comboLink").value=c.external_url||"";
+  $("#comboActive").checked=c.active;
+  const items=(c.combo_items||[]).slice(0,2);
+  populateComboProductSelectors([items[0]||{},items[1]||{}]);
+  $("#comboFormTitle").textContent="แก้ไข Combo";
   openDialog("comboDialog");
 };
 
-$("#comboForm")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
+["1","2"].forEach(n=>{
+  $(`#comboProduct${n}`).addEventListener("change",()=>{
+    $(`#comboPackage${n}`).innerHTML=comboPackageOptions($(`#comboProduct${n}`).value,"");
+  });
+});
 
-  try {
-    const id = $("#comboId").value;
-    const selected = getComboSelectedPackages();
+$("#comboForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  try{
+    const id=$("#comboId").value;
+    const selected=[
+      {product_id:$("#comboProduct1").value,package_id:$("#comboPackage1").value},
+      {product_id:$("#comboProduct2").value,package_id:$("#comboPackage2").value}
+    ];
+    if(selected.some(x=>!x.product_id||!x.package_id)) throw new Error("กรุณาเลือกสินค้าและแพ็กเกจให้ครบทั้ง 2 รายการ");
+    if(selected[0].product_id===selected[1].product_id) throw new Error("Combo ต้องเลือกสินค้าคนละรายการ");
 
-    if (selected.length !== 2) {
-      throw new Error("กรุณาเลือกแพ็กเกจให้ครบ 2 แพ็กเกจ");
-    }
-
-    if (selected[0].product_id === selected[1].product_id) {
-      throw new Error("Combo ต้องเลือกจากสินค้า 2 รายการ");
-    }
-
-    const payload = {
-      name: $("#comboName").value.trim(),
-      description: $("#comboDescription").value,
-      original_price: Number($("#comboOriginalPrice").value || 0),
-      sale_price: Number($("#comboSalePrice").value || 0),
-      external_url: $("#comboLink").value.trim() || null,
-      active: $("#comboActive").checked
+    const payload={
+      name:$("#comboName").value.trim(),
+      description:$("#comboDescription").value,
+      original_price:Number($("#comboOriginalPrice").value||0),
+      sale_price:Number($("#comboSalePrice").value||0),
+      external_url:$("#comboLink").value||null,
+      active:$("#comboActive").checked
     };
+    if(!payload.name) throw new Error("กรุณาใส่ชื่อ Combo");
 
-    if (!isValidExternalUrl(payload.external_url)) {
-      throw new Error("ลิงก์ Combo ต้องเป็น http:// หรือ https://");
+    let comboId=id;
+    if(id){
+      const r=await sb.from("combos").update(payload).eq("id",id);
+      if(r.error)throw r.error;
+      const d=await sb.from("combo_items").delete().eq("combo_id",id);
+      if(d.error)throw d.error;
+    }else{
+      const r=await sb.from("combos").insert(payload).select().single();
+      if(r.error)throw r.error;
+      comboId=r.data.id;
     }
 
-    let comboId = id;
-
-    if (id) {
-      const result = await sb.from("combos").update(payload).eq("id", id);
-      if (result.error) throw result.error;
-      const deleted = await sb.from("combo_items").delete().eq("combo_id", id);
-      if (deleted.error) throw deleted.error;
-    } else {
-      const result = await sb.from("combos").insert(payload).select().single();
-      if (result.error) throw result.error;
-      comboId = result.data.id;
-    }
-
-    const result = await sb.from("combo_items").insert(
-      selected.map((item) => ({
-        combo_id: comboId,
-        product_id: item.product_id,
-        package_id: item.package_id
-      }))
+    const {error}=await sb.from("combo_items").insert(
+      selected.map(x=>({combo_id:comboId,product_id:x.product_id,package_id:x.package_id}))
     );
-
-    if (result.error) throw result.error;
+    if(error)throw error;
 
     closeDialog("comboDialog");
-    await refreshAll();
-    toast("บันทึก Combo แล้ว");
-  } catch (error) {
-    console.error(error);
-    toast(error.message || "บันทึก Combo ไม่สำเร็จ");
-  }
-});
-
-window.deleteCombo = async (id) => {
-  if (!confirm("ลบ Combo?")) return;
-
-  const result = await sb
-    .from("combos")
-    .delete()
-    .eq("id", id);
-
-  if (result.error) {
-    toast(result.error.message);
-    return;
-  }
-
-  await refreshAll();
-  toast("ลบ Combo แล้ว");
-};
-
-// =========================================================
-// RECOMMENDED CRUD
-// =========================================================
-
-$("#addRecommendedBtn")?.addEventListener("click", () => {
-  resetRecommendedForm();
-  openDialog("recommendedDialog");
-});
-
-function resetRecommendedForm() {
-  $("#recommendedForm")?.reset();
-  $("#recommendedId").value = "";
-  $("#recommendedSort").value = 0;
-  $("#recommendedActive").checked = true;
-  $("#recommendedFormTitle").textContent = "เพิ่มเรื่องแนะนำ";
-}
-
-function renderAdminRecommended() {
-  const list = $("#adminRecommendedList");
-  if (!list) return;
-
-  list.innerHTML =
-    state.adminRecommended.map((item) =>
-      adminRow(
-        `🎬 ${mixedText(item.title)}`,
-        item.active,
-        `editRecommended('${item.id}')`,
-        `deleteRecommended('${item.id}')`,
-        item.platform ? `• ${escapeHtml(item.platform)}` : ""
-      )
-    ).join("") ||
-    `<div class="empty">ยังไม่มีเรื่องแนะนำ</div>`;
-}
-
-window.editRecommended = (id) => {
-  const item = state.adminRecommended.find((entry) => entry.id === id);
-  if (!item) return;
-
-  resetRecommendedForm();
-
-  $("#recommendedId").value = item.id;
-  $("#recommendedTitle").value = item.title || "";
-  $("#recommendedDescription").value = item.description || "";
-  $("#recommendedPlatform").value = item.platform || "";
-  $("#recommendedLink").value = item.external_url || "";
-  $("#recommendedSort").value = item.sort_order || 0;
-  $("#recommendedActive").checked = !!item.active;
-
-  $("#recommendedFormTitle").textContent = "แก้ไขเรื่องแนะนำ";
-  openDialog("recommendedDialog");
-};
-
-$("#recommendedForm")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  try {
-    const id = $("#recommendedId").value;
-    const file = $("#recommendedImage").files[0];
-
-    let imageUrl = null;
-
-    if (file) imageUrl = await uploadImage(file, "recommendations");
-
-    const payload = {
-      product_id: null,
-      title: $("#recommendedTitle").value.trim(),
-      description: $("#recommendedDescription").value,
-      platform: $("#recommendedPlatform").value.trim() || null,
-      external_url: $("#recommendedLink").value.trim() || null,
-      sort_order: Number($("#recommendedSort").value || 0),
-      category: "recommended",
-      active: $("#recommendedActive").checked
-    };
-
-    if (!isValidExternalUrl(payload.external_url)) {
-      throw new Error("ลิงก์เรื่องแนะนำต้องเป็น http:// หรือ https://");
-    }
-
-    if (imageUrl) payload.image_url = imageUrl;
-
-    const result = id
-      ? await sb.from("promotions").update(payload).eq("id", id)
-      : await sb.from("promotions").insert(payload);
-
-    if (result.error) throw result.error;
-
-    closeDialog("recommendedDialog");
-    await refreshAll();
-    toast("บันทึกเรื่องแนะนำแล้ว");
-  } catch (error) {
-    console.error(error);
-    toast(error.message || "บันทึกเรื่องแนะนำไม่สำเร็จ");
-  }
-});
-
-window.deleteRecommended = async (id) => {
-  if (!confirm("ลบเรื่องแนะนำ?")) return;
-
-  const result = await sb
-    .from("promotions")
-    .delete()
-    .eq("id", id);
-
-  if (result.error) {
-    toast(result.error.message);
-    return;
-  }
-
-  await refreshAll();
-  toast("ลบเรื่องแนะนำแล้ว");
-};
-
-// =========================================================
-// SOCIAL CRUD
-// =========================================================
-
-$("#addSocialBtn")?.addEventListener("click", () => {
-  resetSocialForm();
-  openDialog("socialDialog");
-});
-
-function resetSocialForm() {
-  $("#socialForm")?.reset();
-  $("#socialId").value = "";
-  $("#socialSort").value = 0;
-  $("#socialActive").checked = true;
-  $("#socialFormTitle").textContent = "เพิ่มช่องทางติดต่อ";
-}
-
-function renderAdminSocial() {
-  const list = $("#adminSocialList");
-  if (!list) return;
-
-  list.innerHTML =
-    state.adminSocialLinks.map((item) =>
-      adminRow(
-        `${item.icon_url ? "🖼️" : "🔗"} ${mixedText(item.name)}`,
-        item.is_active,
-        `editSocial('${item.id}')`,
-        `deleteSocial('${item.id}')`
-      )
-    ).join("") ||
-    `<div class="empty">ยังไม่มีช่องทางติดต่อ</div>`;
-}
-
-window.editSocial = (id) => {
-  const item = state.adminSocialLinks.find((entry) => entry.id === id);
-  if (!item) return;
-
-  resetSocialForm();
-
-  $("#socialId").value = item.id;
-  $("#socialName").value = item.name || "";
-  $("#socialUrl").value = item.external_url || "";
-  $("#socialSort").value = item.sort_order || 0;
-  $("#socialActive").checked = !!item.is_active;
-
-  $("#socialFormTitle").textContent = "แก้ไขช่องทางติดต่อ";
-  openDialog("socialDialog");
-};
-
-$("#socialForm")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  try {
-    const id = $("#socialId").value;
-    const file = $("#socialImage").files[0];
-
-    let imageUrl = null;
-
-    if (file) imageUrl = await uploadImage(file, "social");
-
-    const payload = {
-      name: $("#socialName").value.trim(),
-      external_url: $("#socialUrl").value.trim(),
-      sort_order: Number($("#socialSort").value || 0),
-      is_active: $("#socialActive").checked
-    };
-
-    if (!isValidExternalUrl(payload.external_url)) {
-      throw new Error("ลิงก์ติดต่อ ต้องเป็น http:// หรือ https://");
-    }
-
-    if (imageUrl) payload.icon_url = imageUrl;
-
-    if (!id && !payload.icon_url) {
-      throw new Error("กรุณาแนบรูปโลโก้ช่องทางติดต่อ");
-    }
-
-    const result = id
-      ? await sb.from("social_links").update(payload).eq("id", id)
-      : await sb.from("social_links").insert(payload);
-
-    if (result.error) throw result.error;
-
-    closeDialog("socialDialog");
-    await refreshSocial();
-    toast("บันทึกช่องทางติดต่อแล้ว");
-  } catch (error) {
-    console.error(error);
-    toast(error.message || "บันทึกช่องทางติดต่อไม่สำเร็จ");
-  }
-});
-
-window.deleteSocial = async (id) => {
-  if (!confirm("ลบช่องทางติดต่อนี้?")) return;
-
-  const result = await sb
-    .from("social_links")
-    .delete()
-    .eq("id", id);
-
-  if (result.error) {
-    toast(result.error.message);
-    return;
-  }
-
-  await refreshSocial();
-  toast("ลบช่องทางติดต่อแล้ว");
-};
-
-async function refreshSocial() {
-  await loadSocialLinks();
-
-  if (state.isAdmin) {
-    const result = await sb
-      .from("social_links")
-      .select("*")
-      .order("sort_order", { ascending: true });
-
-    state.adminSocialLinks = result.data || [];
-    renderAdminSocial();
-  }
-}
-
-// =========================================================
-// REFRESH
-// =========================================================
-
-async function refreshAll() {
-  await Promise.all([
-    loadAll(),
-    loadRecommended(),
-    loadSocialLinks(),
-    loadSiteSettings()
-  ]);
-
-  if (state.isAdmin) {
+    await loadAll();
     await loadAdminData();
+    toast("บันทึก Combo แล้ว");
+  }catch(err){
+    console.error("Combo save error:",err);
+    toast("บันทึก Combo ไม่สำเร็จ: "+(err?.message||"ไม่ทราบสาเหตุ"));
   }
+});
+window.deleteCombo=async id=>{if(!confirm("ลบ Combo?"))return;const {error}=await sb.from("combos").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
+
+loadAll();
+
+async function loadSocialLinks() {
+
+  const { data, error } = await sb
+    .from("social_links")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", {
+      ascending: true
+    });
+
+  if (error) {
+    console.error("Social links error:", error);
+    return;
+  }
+
+  renderSocialLinks(data || []);
 }
 
-// =========================================================
-// START
-// =========================================================
 
-async function init() {
-  // Always start in the customer storefront. Admin is opened only after
-  // the hidden 5-click brand gesture and successful admin authorization.
-  showView("home");
+function renderSocialLinks(items) {
 
-  try {
-    await Promise.all([
-      loadSiteSettings(),
-      loadSocialLinks(),
-      loadRecommended(),
-      loadAll()
-    ]);
-  } catch (error) {
-    console.error("Initial load:", error);
-    toast("โหลดข้อมูลบางส่วนไม่สำเร็จ กรุณารีเฟรช");
-  }
+  const container = $("#socialLinks");
+
+  if (!container) return;
+
+
+  container.innerHTML = items.map(item => `
+
+    <a
+      href="${item.external_url}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-link"
+      aria-label="${item.name}"
+    >
+
+      <img
+        src="${item.icon_url}"
+        alt="${item.name}"
+      >
+
+    </a>
+
+  `).join("");
+
 }
-
-init();
