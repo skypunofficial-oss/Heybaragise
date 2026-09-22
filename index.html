@@ -1,324 +1,193 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#dff6ff">
-  <meta name="description" content="Heybaragise 🌻🐰 Premium Apps">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Heybaragise 🌻🐰 | Premium Apps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
 
-  <link rel="stylesheet" href="style.css?v=63">
+<link rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Prompt:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+<link rel="stylesheet" href="style.css?v=61">
 </head>
-
 <body>
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
+  <div class="orb orb1"></div><div class="orb orb2"></div>
 
   <header class="glass header">
-    <div class="header-brand-area">
-      <button id="brand" class="brand" type="button" aria-label="Heybaragise">
-        𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
-      </button>
-
-      <div id="socialLinks" class="social-links" aria-label="ช่องทางติดต่อ"></div>
-    </div>
-
+<button
+    id="brand"
+    class="brand"
+    type="button"
+>
+    𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
+</button>
+    
+    <div
+    id="socialLinks"
+    class="social-links"
+></div>
     <nav>
-      <button type="button" data-view="home">สินค้า</button>
-      <button type="button" data-view="promo">โปรโมชั่น</button>
-      <button type="button" data-view="contact">ติดต่อ</button>
+      <button data-view="home">สินค้า</button>
+      <button data-view="promo">โปรโมชั่น</button>
+      <button data-view="contact">ติดต่อ</button>
     </nav>
   </header>
 
   <main class="container">
-
-    <!-- CUSTOMER HOME -->
     <section id="homeView" class="view active">
+<div class="hero-brand">
 
-      <div class="hero glass">
-        <h1 class="store-name">𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒</h1>
+    <h1 class="store-name">
+        𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
+    </h1>
 
-        <p class="hero-line blue-line">
-          🩵 <span class="font-en">START YOUR DAY RIGHT WITH WHAT YOU LOVE!</span> 🩷
-        </p>
+    <p class="hero-line blue-line">
+        🩵 ꜱᴛᴀʀᴛ ʏᴏᴜʀ ᴅᴀʏ ʀɪɢʜᴛ
+        ᴡɪᴛʜ ᴡʜᴀᴛ ʏᴏᴜ ʟᴏᴠᴇ! 🩷
+    </p>
 
-        <p class="hero-line yellow-line">
-          🌻 <span class="font-en">Let's grow together!</span> 💛
-        </p>
-      </div>
+    <p class="hero-line yellow-line">
+        🌻 𝐋𝐞𝐭'𝐬 𝐠𝐫𝐨𝐰 𝐭𝐨𝐠𝐞𝐭𝐡𝐞𝐫! 💛
+    </p>
 
-      <section id="comboHomeSection" class="combo-home-section" hidden>
-        <div class="section-title-row">
-          <div>
-            <span class="section-label font-en">SPECIAL COMBO</span>
-            <h2>🤝 Combo พิเศษ</h2>
-          </div>
-        </div>
-        <div id="comboHomeGrid" class="combo-grid"></div>
-      </section>
-
-      <div class="section-head">
-        <div>
-          <span class="section-label font-en">PREMIUM APPS</span>
-          <h2>🔥 สินค้าทั้งหมด</h2>
-        </div>
-        <input id="search" type="search" placeholder="ค้นหาสินค้า..." autocomplete="off">
-      </div>
-
+</div>
+      <div class="section-head"><h2>🔥 สินค้าทั้งหมด</h2><input id="search" placeholder="ค้นหาสินค้า..." /></div>
       <div id="productGrid" class="product-grid"></div>
-
-      <section id="recommendedSection" class="recommended-section" hidden>
-        <div class="section-title-row">
-          <div>
-            <span class="section-label font-en">WATCH &amp; RECOMMEND</span>
-            <h2>🎬 น่าดู / แนะนำ</h2>
-          </div>
-        </div>
-        <div id="recommendedGrid" class="recommended-grid"></div>
-      </section>
-
     </section>
 
-    <!-- PRODUCT DETAIL -->
-    <section id="detailView" class="view" hidden>
-      <button type="button" class="back" data-view="home">← กลับหน้าสินค้า</button>
+    <section id="detailView" class="view">
+      <button class="back" data-view="home">← กลับหน้าสินค้า</button>
       <div id="productDetail"></div>
     </section>
 
-    <!-- PROMOTIONS -->
-    <section id="promoView" class="view" hidden>
-      <div class="section-head">
-        <div>
-          <span class="section-label font-en">SPECIAL OFFERS</span>
-          <h2>🎁 โปรโมชั่น &amp; Combo</h2>
-        </div>
-      </div>
+    <section id="comboDetailView" class="view">
+      <button class="back" type="button" onclick="showView('home')">← กลับหน้าสินค้า</button>
+      <div id="comboDetail"></div>
+    </section>
+
+    <section id="promoView" class="view">
+      <div class="section-head"><h2>🎁 โปรโมชั่น & Combo</h2></div>
       <div id="promotionGrid" class="promo-grid"></div>
     </section>
 
-    <!-- CONTACT -->
-    <section id="contactView" class="view" hidden>
-      <div class="glass info-card contact-card">
-        <span class="section-label font-en">CONTACT</span>
-        <h2>🌻 ช่องทางติดต่อ</h2>
-        <p>กดไอคอนด้านบนเพื่อออกไปยังช่องทางภายนอกของร้าน</p>
-        <div id="contactGrid" class="contact-grid"></div>
-      </div>
+    <section id="contactView" class="view">
+      <div class="glass info-card"><h2>🌻🐰 Heybaragise</h2><p>เลือกช่องทางติดต่อหรือสั่งซื้อผ่านลิงก์ที่ร้านกำหนด</p></div>
     </section>
 
-    <!-- ADMIN -->
-    <section id="adminView" class="view" hidden>
+    <section id="adminView" class="view">
       <div class="admin-head">
-        <div>
-          <span class="badge">🔐 Admin Mode</span>
-          <h2>จัดการร้าน</h2>
-        </div>
-        <div class="admin-head-actions">
-          <button id="previewStoreBtn" type="button" class="ghost">👁️ ดูหน้าร้าน</button>
-          <button id="logoutBtn" type="button" class="ghost">ออกจากระบบ</button>
-        </div>
+        <div><span class="badge">🔐 Admin Mode</span><h2>จัดการร้าน</h2></div>
+        <button id="logoutBtn" class="ghost">ออกจากระบบ</button>
       </div>
 
       <div class="admin-tabs">
-        <button type="button" class="tab active" data-admin-tab="products">สินค้า</button>
-        <button type="button" class="tab" data-admin-tab="promotions">โปรโมชั่น</button>
-        <button type="button" class="tab" data-admin-tab="combos">Combo</button>
-        <button type="button" class="tab" data-admin-tab="recommended">🎬 น่าดู / แนะนำ</button>
-        <button type="button" class="tab" data-admin-tab="social">ติดต่อ</button>
-        <button type="button" class="tab" data-admin-tab="theme">พื้นหลัง &amp; ธีม</button>
+        <button class="tab active" data-admin-tab="products">สินค้า</button>
+        <button class="tab" data-admin-tab="promotions">โปรโมชั่น</button>
+        <button class="tab" data-admin-tab="combos">Combo</button>
       </div>
 
       <div id="adminProducts" class="admin-panel active">
-        <button id="addProductBtn" type="button" class="primary">＋ เพิ่มสินค้า</button>
+        <button id="addProductBtn" class="primary">＋ เพิ่มสินค้า</button>
         <div id="adminProductList" class="admin-list"></div>
       </div>
 
       <div id="adminPromotions" class="admin-panel">
-        <button id="addPromoBtn" type="button" class="primary">＋ เพิ่มโปรโมชั่น</button>
+        <button id="addPromoBtn" class="primary">＋ เพิ่มโปรโมชั่น</button>
         <div id="adminPromoList" class="admin-list"></div>
       </div>
 
       <div id="adminCombos" class="admin-panel">
-        <button id="addComboBtn" type="button" class="primary">＋ สร้าง Combo ลดราคา</button>
+        <button id="addComboBtn" class="primary">＋ สร้าง Combo ลดราคา</button>
         <div id="adminComboList" class="admin-list"></div>
-      </div>
-
-      <div id="adminRecommended" class="admin-panel">
-        <div class="panel-intro">
-          <h3>🎬 น่าดู / แนะนำ</h3>
-          <p>เพิ่มได้หลายเรื่อง พร้อมรูป รายละเอียด และลิงก์ภายนอก</p>
-        </div>
-        <button id="addRecommendedBtn" type="button" class="primary">＋ เพิ่มเรื่องแนะนำ</button>
-        <div id="adminRecommendedList" class="admin-list"></div>
-      </div>
-
-      <div id="adminSocial" class="admin-panel">
-        <div class="panel-intro">
-          <h3>🌐 ช่องทางติดต่อ</h3>
-          <p>เพิ่ม Instagram, X, LINE หรือช่องทางอื่นได้</p>
-        </div>
-        <button id="addSocialBtn" type="button" class="primary">＋ เพิ่มช่องทางติดต่อ</button>
-        <div id="adminSocialList" class="admin-list"></div>
-      </div>
-
-      <div id="adminTheme" class="admin-panel">
-        <div class="panel-intro">
-          <h3>🖼️ พื้นหลัง &amp; ธีม</h3>
-          <p>อัปโหลดพื้นหลังและกำหนดสีธีมของร้านได้</p>
-        </div>
-
-        <div class="theme-editor glass">
-          <div class="background-preview-wrap">
-            <div id="backgroundPreview" class="background-preview">
-              <span>ยังไม่มีรูปพื้นหลัง</span>
-            </div>
-          </div>
-
-          <label>
-            รูปพื้นหลัง
-            <input id="backgroundFile" type="file" accept="image/*">
-          </label>
-
-          <div class="theme-grid">
-            <label>
-              สีหลัก
-              <input id="accentColor" type="color" value="#9ed8f5">
-            </label>
-            <label>
-              สีรอง
-              <input id="secondaryColor" type="color" value="#f6b6d1">
-            </label>
-          </div>
-
-          <label class="check">
-            <input id="autoTheme" type="checkbox" checked>
-            ปรับโทนจากรูปอัตโนมัติ
-          </label>
-
-          <div class="form-actions">
-            <button id="saveThemeBtn" type="button" class="primary">บันทึกพื้นหลัง &amp; ธีม</button>
-            <button id="removeBackgroundBtn" type="button" class="small danger">🗑️ ลบรูปพื้นหลัง / กลับค่าเริ่มต้น</button>
-          </div>
-        </div>
       </div>
     </section>
   </main>
 
-  <footer id="siteFooter">© <span id="year"></span> Heybaragise 🌻🐰</footer>
+  <footer>© <span id="year"></span> Heybaragise 🌻🐰</footer>
 
-  <!-- LOGIN -->
   <dialog id="authDialog" class="modal glass">
-    <button type="button" class="close" data-close="authDialog">×</button>
+    <button class="close" data-close="authDialog">×</button>
     <h2>🔐 Admin Login</h2>
     <p>เข้าสู่ระบบเพื่อแก้ไขข้อมูลร้าน</p>
     <form id="loginForm">
-      <input id="loginEmail" type="email" placeholder="Email" required>
-      <input id="loginPassword" type="password" placeholder="Password" required>
+      <input id="loginEmail" type="email" placeholder="Email" required />
+      <input id="loginPassword" type="password" placeholder="Password" required />
       <button class="primary" type="submit">เข้าสู่ระบบ</button>
     </form>
   </dialog>
 
-  <!-- PRODUCT -->
   <dialog id="productDialog" class="modal glass wide">
-    <button type="button" class="close" data-close="productDialog">×</button>
+    <button class="close" data-close="productDialog">×</button>
     <h2 id="productFormTitle">เพิ่มสินค้า</h2>
     <form id="productForm">
-      <input type="hidden" id="productId">
-
-      <label>ชื่อสินค้า<input id="pName" required></label>
-      <label>ไอคอน / Emoji<input id="pIcon" value="📱"></label>
+      <input type="hidden" id="productId" />
+      <label>ชื่อสินค้า<input id="pName" required /></label>
+      <label>ไอคอน/Emoji<input id="pIcon" value="📱" /></label>
       <label>คำอธิบายสั้น<textarea id="pShort"></textarea></label>
-      <label>รายละเอียดเต็ม<textarea id="pDescription" placeholder="กด Enter เพื่อขึ้นบรรทัดใหม่ได้"></textarea></label>
-      <label>ลิงก์ภายนอก / ลิงก์สั่งซื้อ<input id="pLink" type="url" placeholder="https://..."></label>
-      <label>ลำดับการแสดงสินค้า<input id="pSortOrder" type="number" min="1" step="1" placeholder="เช่น 1 = ขึ้นก่อนสุด"></label>
-      <label>รูปปกสินค้า<input id="pImage" type="file" accept="image/*"></label>
-      <div id="pCurrentImage" class="current-image-note" hidden>🖼️ ใช้รูปเดิมอยู่ — ถ้าไม่เลือกรูปใหม่ ระบบจะเก็บรูปเดิมไว้</div>
-      <label class="check"><input id="pActive" type="checkbox" checked> เปิดแสดงสินค้า</label>
-
+      <label>รายละเอียดเต็ม<textarea id="pDescription"></textarea></label>
+      <label>ลิงก์ภายนอก / ลิงก์สั่งซื้อ<input id="pLink" type="url" placeholder="https://..." /></label>
+      <label>รูปปกสินค้า<input id="pImage" type="file" accept="image/*" /></label>
+      <label class="check"><input id="pActive" type="checkbox" checked /> เปิดแสดงสินค้า</label>
       <h3>💳 แพ็กเกจ</h3>
       <div id="packageRows"></div>
       <button type="button" id="addPackageRow" class="ghost">＋ เพิ่มแพ็กเกจ</button>
-
       <button class="primary" type="submit">บันทึกสินค้า</button>
     </form>
   </dialog>
 
-  <!-- PROMOTION -->
-  <dialog id="promoDialog" class="modal glass wide">
-    <button type="button" class="close" data-close="promoDialog">×</button>
+  <dialog id="promoDialog" class="modal glass">
+    <button class="close" data-close="promoDialog">×</button>
     <h2 id="promoFormTitle">เพิ่มโปรโมชั่น</h2>
     <form id="promoForm">
-      <input type="hidden" id="promoId">
-
+      <input type="hidden" id="promoId" />
       <label>สินค้า<select id="promoProduct"></select></label>
-      <label>ชื่อรายการ<input id="promoTitle" required></label>
+      <label>ชื่อโปรโมชั่น<input id="promoTitle" required /></label>
       <label>รายละเอียด<textarea id="promoDescription"></textarea></label>
-      <label>รูปโปรโมท / Poster<input id="promoImage" type="file" accept="image/*"></label>
-      <label>ลิงก์ภายนอก<input id="promoLink" type="url" placeholder="https://..."></label>
-      <label class="check"><input id="promoActive" type="checkbox" checked> เปิดแสดง</label>
-
-      <button class="primary" type="submit">บันทึก</button>
+      <label>รูปโปรโมท/Poster<input id="promoImage" type="file" accept="image/*" /></label>
+      <label>ลิงก์ภายนอก<input id="promoLink" type="url" placeholder="https://..." /></label>
+      <label class="check"><input id="promoActive" type="checkbox" checked /> เปิดแสดง</label>
+      <button class="primary" type="submit">บันทึกโปรโมชั่น</button>
     </form>
   </dialog>
 
-  <!-- COMBO -->
-  <dialog id="comboDialog" class="modal glass">
-    <button type="button" class="close" data-close="comboDialog">×</button>
-    <h2 id="comboFormTitle">สร้าง Combo</h2>
+  <dialog id="comboDialog" class="modal glass wide">
+    <button class="close" data-close="comboDialog">×</button>
+    <h2 id="comboFormTitle">สร้าง Combo ลดราคา</h2>
     <form id="comboForm">
-      <input type="hidden" id="comboId">
+      <input type="hidden" id="comboId" />
+      <label>ชื่อ Combo<input id="comboName" required placeholder="เช่น Netflix + YouTube Premium" /></label>
+      <label>รายละเอียด<textarea id="comboDescription" placeholder="รายละเอียดโปรโมชั่นของ Combo"></textarea></label>
 
-      <label>ชื่อ Combo<input id="comboName" required placeholder="เช่น Netflix + Spotify"></label>
-      <label>รายละเอียด<textarea id="comboDescription"></textarea></label>
-      <label>เลือกสินค้า (เลือกได้หลายรายการ)<select id="comboProducts" multiple size="6"></select></label>
-      <label>ราคาปกติ<input id="comboOriginalPrice" type="number" min="0" step="0.01"></label>
-      <label>ราคาพิเศษ<input id="comboSalePrice" type="number" min="0" step="0.01"></label>
-      <label>ลิงก์สั่งซื้อ<input id="comboLink" type="url" placeholder="https://..."></label>
-      <label class="check"><input id="comboActive" type="checkbox" checked> เปิดแสดง</label>
+      <div class="combo-select-editor">
+        <div class="combo-select-item" id="comboItem1">
+          <div class="combo-select-title">สินค้า 1</div>
+          <label>เลือกสินค้า<select id="comboProduct1" required></select></label>
+          <label>เลือกแพ็กเกจ<select id="comboPackage1" required></select></label>
+        </div>
+        <div class="combo-select-item" id="comboItem2">
+          <div class="combo-select-title">สินค้า 2</div>
+          <label>เลือกสินค้า<select id="comboProduct2" required></select></label>
+          <label>เลือกแพ็กเกจ<select id="comboPackage2" required></select></label>
+        </div>
+      </div>
 
+      <label>ราคาปกติ<input id="comboOriginalPrice" type="number" min="0" step="0.01" /></label>
+      <label>ราคาพิเศษ<input id="comboSalePrice" type="number" min="0" step="0.01" /></label>
+      <label>ลิงก์สั่งซื้อ<input id="comboLink" type="url" placeholder="https://..." /></label>
+      <label class="check"><input id="comboActive" type="checkbox" checked /> เปิดแสดง</label>
       <button class="primary" type="submit">บันทึก Combo</button>
     </form>
   </dialog>
 
-  <!-- RECOMMENDED -->
-  <dialog id="recommendedDialog" class="modal glass wide">
-    <button type="button" class="close" data-close="recommendedDialog">×</button>
-    <h2 id="recommendedFormTitle">เพิ่มเรื่องแนะนำ</h2>
-    <form id="recommendedForm">
-      <input type="hidden" id="recommendedId">
-
-      <label>ชื่อเรื่อง<input id="recommendedTitle" required placeholder="เช่น Wednesday"></label>
-      <label>คำอธิบาย<textarea id="recommendedDescription" placeholder="กด Enter เพื่อขึ้นบรรทัดใหม่ได้"></textarea></label>
-      <label>แพลตฟอร์ม / หมวด<input id="recommendedPlatform" placeholder="Netflix / Disney+ / Viu"></label>
-      <label>รูป Poster<input id="recommendedImage" type="file" accept="image/*"></label>
-      <label>ลิงก์ภายนอก<input id="recommendedLink" type="url" placeholder="https://..."></label>
-      <label>ลำดับ<input id="recommendedSort" type="number" min="0" value="0"></label>
-      <label class="check"><input id="recommendedActive" type="checkbox" checked> เปิดแสดง</label>
-
-      <button class="primary" type="submit">บันทึกเรื่องแนะนำ</button>
-    </form>
-  </dialog>
-
-  <!-- SOCIAL -->
-  <dialog id="socialDialog" class="modal glass">
-    <button type="button" class="close" data-close="socialDialog">×</button>
-    <h2 id="socialFormTitle">เพิ่มช่องทางติดต่อ</h2>
-    <form id="socialForm">
-      <input type="hidden" id="socialId">
-
-      <label>ชื่อช่องทาง<input id="socialName" required placeholder="Instagram"></label>
-      <label>รูปโลโก้<input id="socialImage" type="file" accept="image/*"></label>
-      <label>ลิงก์ภายนอก<input id="socialUrl" type="url" required placeholder="https://instagram.com/..."></label>
-      <label>ลำดับ<input id="socialSort" type="number" min="0" value="0"></label>
-      <label class="check"><input id="socialActive" type="checkbox" checked> เปิดแสดง</label>
-
-      <button class="primary" type="submit">บันทึกช่องทาง</button>
-    </form>
-  </dialog>
-
-  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=56"></script>
+  <script src="app.js?v=61"></script>
 </body>
 </html>
