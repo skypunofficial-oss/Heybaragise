@@ -1136,3 +1136,17 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
 .home-combo-section .combo-home-head {
   margin-bottom: 10px;
 }
+
+
+/* v64 — keep original store font, center the store text only */
+.hero-brand {
+  width: 100%;
+  text-align: center !important;
+}
+.hero-brand .store-name,
+.hero-brand .hero-line {
+  text-align: center !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
