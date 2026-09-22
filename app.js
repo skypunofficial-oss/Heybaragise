@@ -34,15 +34,32 @@ async function loadAll(){
   const [p,pr,c] = await Promise.all([
     sb.from("products").select("*, packages(*)").eq("active",true).order("sort_order"),
     sb.from("promotions").select("*, products(name,icon)").eq("active",true).order("created_at",{ascending:false}),
-    sb.from("combos").select("*, combo_items(product_id, package_id)").eq("active",true).order("created_at",{ascending:false})
+    sb.from("combos").select("*").eq("active",true).order("created_at",{ascending:false})
   ]);
   if(p.error) console.error(p.error);
   if(pr.error) console.error(pr.error);
   if(c.error) console.error(c.error);
+
   state.products=p.data||[];
   state.promotions=pr.data||[];
-  state.combos=(c.data||[]).map(enrichCombo);
-  renderProducts(); renderPromotions();
+
+  // Load Combo items separately so the public home page does not fail
+  // when PostgREST cannot resolve the nested combo_items relationship.
+  const comboIds=(c.data||[]).map(x=>x.id);
+  let comboItems=[];
+  if(comboIds.length){
+    const ci=await sb.from("combo_items").select("*").in("combo_id",comboIds);
+    if(ci.error) console.error(ci.error);
+    comboItems=ci.data||[];
+  }
+  state.combos=(c.data||[]).map(combo=>enrichCombo({
+    ...combo,
+    combo_items: comboItems.filter(item=>String(item.combo_id)===String(combo.id))
+  }));
+
+  renderProducts();
+  renderPromotions();
+  renderHomeCombos();
 }
 
 function enrichCombo(combo){
@@ -97,7 +114,6 @@ function renderPromotions(){
 
   $("#promotionGrid").innerHTML = (promos+combos)||`<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
   $$("#promotionGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
-  renderHomeCombos();
 }
 function renderHomeCombos(){
   const section=$("#homeComboSection");
@@ -316,11 +332,21 @@ async function loadAdminData(){
   const [p,pr,c]=await Promise.all([
     sb.from("products").select("*, packages(*)").order("sort_order"),
     sb.from("promotions").select("*").order("created_at",{ascending:false}),
-    sb.from("combos").select("*, combo_items(product_id, package_id)").order("created_at",{ascending:false})
+    sb.from("combos").select("*").order("created_at",{ascending:false})
   ]);
   state.adminProducts=p.data||[];
   state.adminPromotions=pr.data||[];
-  state.adminCombos=(c.data||[]).map(enrichCombo);
+  const comboIds=(c.data||[]).map(x=>x.id);
+  let comboItems=[];
+  if(comboIds.length){
+    const ci=await sb.from("combo_items").select("*").in("combo_id",comboIds);
+    if(ci.error) console.error(ci.error);
+    comboItems=ci.data||[];
+  }
+  state.adminCombos=(c.data||[]).map(combo=>enrichCombo({
+    ...combo,
+    combo_items: comboItems.filter(item=>String(item.combo_id)===String(combo.id))
+  }));
   renderAdmin();
 }
 
@@ -525,4 +551,3 @@ function renderSocialLinks(items) {
   `).join("");
 
 }
-
