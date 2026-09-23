@@ -42,7 +42,7 @@ async function loadAll(){
   state.products=p.data||[];
   state.promotions=pr.data||[];
   state.combos=(c.data||[]).map(enrichCombo);
-  renderProducts(); renderPromotions();
+  renderProducts(); renderHomeCombos(); renderPromotions();
 }
 
 function enrichCombo(combo){
@@ -52,6 +52,32 @@ function enrichCombo(combo){
     return {...item, products:product||null, packages:pkg||null};
   });
   return {...combo, combo_items:items};
+}
+
+
+function renderHomeCombos(){
+  const el = $("#homeComboGrid");
+  if(!el) return;
+  const combos = state.combos || [];
+  el.innerHTML = combos.length ? combos.map(c=>`
+    <article class="combo-card home-combo-card glass" data-combo-id="${c.id}">
+      <div class="combo-image-row">
+        ${(c.combo_items||[]).slice(0,2).map(i=>i.products?.image_url
+          ? `<img class="combo-product-image" src="${i.products.image_url}" alt="${escapeHtml(i.products?.name||"")}">`
+          : `<div class="combo-product-placeholder">${escapeHtml(i.products?.icon||"📱")}</div>`
+        ).join("")}
+      </div>
+      <div class="card-body">
+        <span class="badge">🤝 Combo Deal</span>
+        <h3 class="font-en">${escapeHtml(c.name)}</h3>
+        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
+        ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
+        <div class="price-sale">฿${money(c.sale_price)}</div>
+      </div>
+    </article>`).join("") : "";
+  $$("#homeComboGrid .combo-card").forEach(card=>{
+    card.onclick=()=>openCombo(card.dataset.comboId);
+  });
 }
 
 function renderProducts(list=state.products){
@@ -89,7 +115,7 @@ function renderPromotions(){
         <span class="badge">🤝 Combo Deal</span>
         <h3 class="font-en">${escapeHtml(c.name)}</h3>
         <p>${escapeHtml(c.description||"")}</p>
-        <p class="combo-package-summary font-en">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
+        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
         <div class="price-sale">฿${money(c.sale_price)}</div>
       </div>
@@ -117,7 +143,7 @@ function openCombo(id){
       </div>
       <p class="detail-description">${escapeHtml(i.products?.description||i.products?.short_description||"")}</p>
       <div class="package combo-selected-package">
-        <span class="font-en">${escapeHtml(i.packages?.name||"แพ็กเกจที่เลือก")}</span>
+        <span>${escapeHtml(i.packages?.name||"แพ็กเกจที่เลือก")}</span>
         <b>฿${money(i.packages?.price)}</b>
       </div>
     </section>`).join("");
@@ -326,8 +352,7 @@ $("#productForm").addEventListener("submit",async e=>{
     else {const {data,error}=await sb.from("products").insert(payload).select().single();if(error)throw error;productId=data.id;}
     const pkgs=$$(".package-row").map(r=>({product_id:productId,name:r.querySelector(".pkg-name").value,price:Number(r.querySelector(".pkg-price").value||0)})).filter(x=>x.name);
     if(pkgs.length){const {error}=await sb.from("packages").insert(pkgs);if(error)throw error;}
-    closeDialog("productDialog");await loadAll();
-loadSocialLinks();await loadAdminData();toast("บันทึกสินค้าแล้ว");
+    closeDialog("productDialog");await loadAll();await loadAdminData();toast("บันทึกสินค้าแล้ว");
   }catch(err){toast(err.message);}
 });
 window.deleteProduct=async id=>{if(!confirm("ลบสินค้านี้?"))return;const {error}=await sb.from("products").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
@@ -449,36 +474,30 @@ window.deleteCombo=async id=>{if(!confirm("ลบ Combo?"))return;const {error}=
 
 loadAll();
 
-async function loadSocialLinks() {
 
+async function loadSocialLinks() {
   const { data, error } = await sb
     .from("social_links")
     .select("*")
     .eq("is_active", true)
-    .order("sort_order", {
-      ascending: true
-    });
+    .order("sort_order", { ascending: true });
 
   if (error) {
     console.error("Social links error:", error);
     return;
   }
-
   renderSocialLinks(data || []);
 }
 
-
 function renderSocialLinks(items) {
-  const container = $("#socialLinks");
-  if (container) {
-    container.innerHTML = items.map(item => `
-      <a
-        href="${escapeHtml(item.external_url || "#")}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="social-link"
-        aria-label="${escapeHtml(item.name || "")}"
-      >
+  const safe = items || [];
+
+  const header = $("#socialLinks");
+  if (header) {
+    header.innerHTML = safe.map(item => `
+      <a href="${escapeHtml(item.external_url || "#")}"
+         target="_blank" rel="noopener noreferrer"
+         class="social-link" aria-label="${escapeHtml(item.name || "")}">
         <img src="${escapeHtml(item.icon_url || "")}" alt="${escapeHtml(item.name || "")}">
       </a>
     `).join("");
@@ -486,19 +505,16 @@ function renderSocialLinks(items) {
 
   const contact = $("#contactLinks");
   if (contact) {
-    contact.innerHTML = items.length
-      ? items.map(item => `
-          <a
-            href="${escapeHtml(item.external_url || "#")}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="contact-link"
-          >
-            <img src="${escapeHtml(item.icon_url || "")}" alt="">
-            <span>${escapeHtml(item.name || "ติดต่อร้าน")}</span>
-          </a>
-        `).join("")
-      : `<div class="empty">ยังไม่มีช่องทางติดต่อ</div>`;
+    contact.innerHTML = safe.length ? safe.map(item => `
+      <a href="${escapeHtml(item.external_url || "#")}"
+         target="_blank" rel="noopener noreferrer"
+         class="contact-link">
+        <img src="${escapeHtml(item.icon_url || "")}" alt="">
+        <span>${escapeHtml(item.name || "ติดต่อร้าน")}</span>
+      </a>
+    `).join("") : `<div class="empty">ยังไม่มีช่องทางติดต่อ</div>`;
   }
 }
+
+loadSocialLinks();
 
