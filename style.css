@@ -1083,114 +1083,100 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
 
 
 /* =========================================================
-   HEYBARAGISE v66 — FONT + CONTACT FIX
-   Thai      = LKKaohom
-   English   = Ongleip Yuntaeng
-   Korean    = Ongleip Yuntaeng
+   HEYBARAGISE v67 — RESTORE HOME COMBO + CONTACT + FONTS
 ========================================================= */
-
 @font-face {
   font-family: "LKKaohom";
   src: url("fonts/LKKaohom-Freecomm.ttf") format("truetype");
-  font-weight: normal;
   font-style: normal;
+  font-weight: normal;
   font-display: swap;
 }
-
 @font-face {
   font-family: "OngleipYuntaeng";
   src: url("fonts/Ongleip_Yuntaeng.ttf") format("truetype");
-  font-weight: normal;
   font-style: normal;
+  font-weight: normal;
   font-display: swap;
 }
 
-html, body,
-button, input, textarea, select, label,
-h1, h2, h3, h4, h5, h6 {
+body, button, input, textarea, select, label, h1, h2, h3, h4, h5, h6 {
   font-family: "LKKaohom", sans-serif !important;
   font-style: normal !important;
 }
-
-/* English/Korean text explicitly marked by app.js */
-.font-en,
-.font-en * {
+.font-en, .font-en * {
   font-family: "OngleipYuntaeng", sans-serif !important;
   font-style: normal !important;
   font-weight: normal !important;
 }
 
-/* Combo English/Korean fields */
-.combo-card h3.font-en,
-.combo-card .combo-package-summary.font-en,
-.combo-detail-hero h1.font-en,
-.combo-product-detail .badge.font-en,
-.combo-product-detail h2.font-en,
-.combo-selected-package .font-en {
-  font-family: "OngleipYuntaeng", sans-serif !important;
-  font-style: normal !important;
-  font-weight: normal !important;
-}
+.hero-brand { text-align: center !important; }
+.store-name { text-align: center !important; }
 
-/* Store hero stays centered */
-.hero-brand,
-.store-name,
-.hero-line {
-  text-align: center !important;
-}
+.home-combo-section { margin: 12px 0 28px; }
+.home-combo-head { margin-bottom: 12px; }
+.home-combo-head h2 { margin-left: 0; }
 
-/* Contact/social channels */
-.social-links {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  flex-wrap: nowrap;
+.combo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 11px;
+}
+.home-combo-card {
+  min-width: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+.home-combo-card .card-body { text-align: left; }
+
+.combo-image-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 8px;
+  padding: 12px;
+}
+.combo-product-image,
+.combo-product-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  object-fit: cover;
+  display: block;
+  min-width: 0;
+}
+.combo-product-placeholder {
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(255,255,255,.5);
+  font-size: 40px;
 }
 
 .contact-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, minmax(0,1fr));
   gap: 12px;
   margin-top: 18px;
 }
-
 .contact-link {
   text-decoration: none;
-  color: #66758c;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 14px;
   border-radius: 18px;
   background: rgba(255,255,255,.28);
   border: 1px solid rgba(255,255,255,.45);
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
-
 .contact-link img {
   width: 32px;
   height: 32px;
   object-fit: contain;
 }
-
-@media (max-width: 700px) {
-  .contact-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .social-links {
-    gap: 5px;
-  }
-
-  .social-link {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
-  }
-
-  .social-link img {
-    width: 19px;
-    height: 19px;
-  }
+@media (max-width:700px) {
+  .combo-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+  .combo-image-row { gap: 6px; padding: 9px; }
+  .contact-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
