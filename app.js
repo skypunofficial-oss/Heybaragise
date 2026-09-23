@@ -34,32 +34,15 @@ async function loadAll(){
   const [p,pr,c] = await Promise.all([
     sb.from("products").select("*, packages(*)").eq("active",true).order("sort_order"),
     sb.from("promotions").select("*, products(name,icon)").eq("active",true).order("created_at",{ascending:false}),
-    sb.from("combos").select("*").eq("active",true).order("created_at",{ascending:false})
+    sb.from("combos").select("*, combo_items(product_id, package_id)").eq("active",true).order("created_at",{ascending:false})
   ]);
   if(p.error) console.error(p.error);
   if(pr.error) console.error(pr.error);
   if(c.error) console.error(c.error);
-
   state.products=p.data||[];
   state.promotions=pr.data||[];
-
-  // Load Combo items separately so the public home page does not fail
-  // when PostgREST cannot resolve the nested combo_items relationship.
-  const comboIds=(c.data||[]).map(x=>x.id);
-  let comboItems=[];
-  if(comboIds.length){
-    const ci=await sb.from("combo_items").select("*").in("combo_id",comboIds);
-    if(ci.error) console.error(ci.error);
-    comboItems=ci.data||[];
-  }
-  state.combos=(c.data||[]).map(combo=>enrichCombo({
-    ...combo,
-    combo_items: comboItems.filter(item=>String(item.combo_id)===String(combo.id))
-  }));
-
-  renderProducts();
-  renderPromotions();
-  renderHomeCombos();
+  state.combos=(c.data||[]).map(enrichCombo);
+  renderProducts(); renderPromotions();
 }
 
 function enrichCombo(combo){
@@ -77,7 +60,7 @@ function renderProducts(list=state.products){
       ${p.image_url?`<img class="product-image" src="${p.image_url}" alt="${escapeHtml(p.name)}">`:""}
       <div class="card-body">
         <div class="product-icon">${escapeHtml(p.icon||"📱")}</div>
-        <h3 class="font-en">${escapeHtml(p.name)}</h3>
+        <h3>${escapeHtml(p.name)}</h3>
         <p>${escapeHtml(p.short_description||"")}</p>
         <span class="arrow">→</span>
       </div>
@@ -106,7 +89,7 @@ function renderPromotions(){
         <span class="badge">🤝 Combo Deal</span>
         <h3 class="font-en">${escapeHtml(c.name)}</h3>
         <p>${escapeHtml(c.description||"")}</p>
-        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
+        <p class="combo-package-summary font-en">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
         <div class="price-sale">฿${money(c.sale_price)}</div>
       </div>
@@ -114,36 +97,6 @@ function renderPromotions(){
 
   $("#promotionGrid").innerHTML = (promos+combos)||`<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
   $$("#promotionGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
-}
-function renderHomeCombos(){
-  const section=$("#homeComboSection");
-  const grid=$("#homeComboGrid");
-  if(!section || !grid)return;
-  const combos=state.combos||[];
-  if(!combos.length){
-    section.hidden=true;
-    grid.innerHTML="";
-    return;
-  }
-  section.hidden=false;
-  grid.innerHTML=combos.map(c=>`
-    <article class="combo-card promo-card glass" data-home-combo-id="${c.id}">
-      <div class="combo-image-row">
-        ${(c.combo_items||[]).slice(0,2).map(i=>i.products?.image_url
-          ? `<img class="combo-product-image" src="${i.products.image_url}" alt="${escapeHtml(i.products?.name||"")}">`
-          : `<div class="combo-product-placeholder">${escapeHtml(i.products?.icon||"📱")}</div>`
-        ).join("")}
-      </div>
-      <div class="card-body">
-        <span class="badge">🤝 Combo Deal</span>
-        <h3 class="font-en">${escapeHtml(c.name)}</h3>
-        <p>${escapeHtml(c.description||"")}</p>
-        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
-        ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
-        <div class="price-sale">฿${money(c.sale_price)}</div>
-      </div>
-    </article>`).join("");
-  $$("#homeComboGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.homeComboId));
 }
 function openCombo(id){
   const c=state.combos.find(x=>String(x.id)===String(id)); if(!c)return;
@@ -164,7 +117,7 @@ function openCombo(id){
       </div>
       <p class="detail-description">${escapeHtml(i.products?.description||i.products?.short_description||"")}</p>
       <div class="package combo-selected-package">
-        <span>${escapeHtml(i.packages?.name||"แพ็กเกจที่เลือก")}</span>
+        <span class="font-en">${escapeHtml(i.packages?.name||"แพ็กเกจที่เลือก")}</span>
         <b>฿${money(i.packages?.price)}</b>
       </div>
     </section>`).join("");
@@ -173,7 +126,7 @@ function openCombo(id){
     <div class="detail-hero glass combo-detail-hero">
       <div class="combo-detail-image-row">${images}</div>
       <span class="badge">🤝 Combo Deal</span>
-      <h1>${escapeHtml(c.name)}</h1>
+      <h1 class="font-en">${escapeHtml(c.name)}</h1>
       <p class="detail-description">${escapeHtml(c.description||"")}</p>
       <div class="combo-detail-price">
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
@@ -332,21 +285,11 @@ async function loadAdminData(){
   const [p,pr,c]=await Promise.all([
     sb.from("products").select("*, packages(*)").order("sort_order"),
     sb.from("promotions").select("*").order("created_at",{ascending:false}),
-    sb.from("combos").select("*").order("created_at",{ascending:false})
+    sb.from("combos").select("*, combo_items(product_id, package_id)").order("created_at",{ascending:false})
   ]);
   state.adminProducts=p.data||[];
   state.adminPromotions=pr.data||[];
-  const comboIds=(c.data||[]).map(x=>x.id);
-  let comboItems=[];
-  if(comboIds.length){
-    const ci=await sb.from("combo_items").select("*").in("combo_id",comboIds);
-    if(ci.error) console.error(ci.error);
-    comboItems=ci.data||[];
-  }
-  state.adminCombos=(c.data||[]).map(combo=>enrichCombo({
-    ...combo,
-    combo_items: comboItems.filter(item=>String(item.combo_id)===String(combo.id))
-  }));
+  state.adminCombos=(c.data||[]).map(enrichCombo);
   renderAdmin();
 }
 
@@ -383,7 +326,8 @@ $("#productForm").addEventListener("submit",async e=>{
     else {const {data,error}=await sb.from("products").insert(payload).select().single();if(error)throw error;productId=data.id;}
     const pkgs=$$(".package-row").map(r=>({product_id:productId,name:r.querySelector(".pkg-name").value,price:Number(r.querySelector(".pkg-price").value||0)})).filter(x=>x.name);
     if(pkgs.length){const {error}=await sb.from("packages").insert(pkgs);if(error)throw error;}
-    closeDialog("productDialog");await loadAll();await loadAdminData();toast("บันทึกสินค้าแล้ว");
+    closeDialog("productDialog");await loadAll();
+loadSocialLinks();await loadAdminData();toast("บันทึกสินค้าแล้ว");
   }catch(err){toast(err.message);}
 });
 window.deleteProduct=async id=>{if(!confirm("ลบสินค้านี้?"))return;const {error}=await sb.from("products").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
@@ -525,29 +469,36 @@ async function loadSocialLinks() {
 
 
 function renderSocialLinks(items) {
-
   const container = $("#socialLinks");
-
-  if (!container) return;
-
-
-  container.innerHTML = items.map(item => `
-
-    <a
-      href="${item.external_url}"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="social-link"
-      aria-label="${item.name}"
-    >
-
-      <img
-        src="${item.icon_url}"
-        alt="${item.name}"
+  if (container) {
+    container.innerHTML = items.map(item => `
+      <a
+        href="${escapeHtml(item.external_url || "#")}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="social-link"
+        aria-label="${escapeHtml(item.name || "")}"
       >
+        <img src="${escapeHtml(item.icon_url || "")}" alt="${escapeHtml(item.name || "")}">
+      </a>
+    `).join("");
+  }
 
-    </a>
-
-  `).join("");
-
+  const contact = $("#contactLinks");
+  if (contact) {
+    contact.innerHTML = items.length
+      ? items.map(item => `
+          <a
+            href="${escapeHtml(item.external_url || "#")}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="contact-link"
+          >
+            <img src="${escapeHtml(item.icon_url || "")}" alt="">
+            <span>${escapeHtml(item.name || "ติดต่อร้าน")}</span>
+          </a>
+        `).join("")
+      : `<div class="empty">ยังไม่มีช่องทางติดต่อ</div>`;
+  }
 }
+
