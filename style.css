@@ -1081,33 +1081,38 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
   }
 }
 
+
 /* =========================================================
-   HEYBARAGISE v65 — AUTHORITATIVE FONT RULES
-   Thai = LKKaohom
-   English + Korean = Ongleip Yuntaeng
+   HEYBARAGISE v66 — FONT + CONTACT FIX
+   Thai      = LKKaohom
+   English   = Ongleip Yuntaeng
+   Korean    = Ongleip Yuntaeng
 ========================================================= */
 
-html, body {
-  font-style: normal !important;
+@font-face {
+  font-family: "LKKaohom";
+  src: url("fonts/LKKaohom-Freecomm.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-body,
-button,
-input,
-textarea,
-select,
-label,
-h1, h2, h3, h4, h5, h6,
-.section-title,
-.section-head,
-.card-body,
-.detail-hero,
-.modal,
-.modal * {
+@font-face {
+  font-family: "OngleipYuntaeng";
+  src: url("fonts/Ongleip_Yuntaeng.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+html, body,
+button, input, textarea, select, label,
+h1, h2, h3, h4, h5, h6 {
   font-family: "LKKaohom", sans-serif !important;
   font-style: normal !important;
 }
 
+/* English/Korean text explicitly marked by app.js */
 .font-en,
 .font-en * {
   font-family: "OngleipYuntaeng", sans-serif !important;
@@ -1115,109 +1120,77 @@ h1, h2, h3, h4, h5, h6,
   font-weight: normal !important;
 }
 
-/* English/Korean elements that are explicitly marked by the app */
-.store-name.font-en,
-.product-card .font-en,
-.combo-card .font-en,
-.combo-detail .font-en,
-.package-item .font-en,
-.price .font-en,
-button.font-en,
-a.font-en {
+/* Combo English/Korean fields */
+.combo-card h3.font-en,
+.combo-card .combo-package-summary.font-en,
+.combo-detail-hero h1.font-en,
+.combo-product-detail .badge.font-en,
+.combo-product-detail h2.font-en,
+.combo-selected-package .font-en {
   font-family: "OngleipYuntaeng", sans-serif !important;
   font-style: normal !important;
+  font-weight: normal !important;
 }
 
-/* Store heading: keep its existing font choice, only center it */
-.hero,
+/* Store hero stays centered */
+.hero-brand,
 .store-name,
 .hero-line {
   text-align: center !important;
 }
 
-.store-name {
-  margin-left: auto !important;
-  margin-right: auto !important;
+/* Contact/social channels */
+.social-links {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-wrap: nowrap;
 }
 
-/* Combo on the home page: same visual scale as product cards */
-.combo-grid,
-.combos-grid,
-#comboGrid,
-#combosGrid,
-#promotionGrid {
+.contact-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 11px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
 }
 
-.combo-card,
-.combos-card {
-  width: 100%;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.combo-image,
-.combos-image,
-.combo-card img,
-.combos-card img,
-.combo-grid img,
-.combos-grid img,
-#comboGrid img,
-#combosGrid img,
-#promotionGrid .promo-image {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  display: block;
-  max-width: 100%;
-}
-
-/* Combo detail: two product images side-by-side, not oversized */
-.combo-detail-image-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.contact-link {
+  text-decoration: none;
+  color: #66758c;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.28);
+  border: 1px solid rgba(255,255,255,.45);
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
 
-.combo-detail-product-image,
-.combo-detail-product-placeholder {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  height: auto;
-  object-fit: cover;
-  min-width: 0;
+.contact-link img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 @media (max-width: 700px) {
-  .combo-grid,
-  .combos-grid,
-  #comboGrid,
-  #combosGrid,
-  #promotionGrid {
+  .contact-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 11px;
   }
 
-  .combo-image,
-  .combos-image,
-  .combo-card img,
-  .combos-card img,
-  .combo-grid img,
-  .combos-grid img,
-  #comboGrid img,
-  #combosGrid img,
-  #promotionGrid .promo-image {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
+  .social-links {
+    gap: 5px;
   }
 
-  .combo-detail-image-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+  .social-link {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .social-link img {
+    width: 19px;
+    height: 19px;
   }
 }
+
