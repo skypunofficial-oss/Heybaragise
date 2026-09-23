@@ -86,7 +86,7 @@ function renderProducts(list=state.products){
       ${p.image_url?`<img class="product-image" src="${p.image_url}" alt="${escapeHtml(p.name)}">`:""}
       <div class="card-body">
         <div class="product-icon">${escapeHtml(p.icon||"📱")}</div>
-        <h3>${escapeHtml(p.name)}</h3>
+        <h3 class="font-en">${escapeHtml(p.name)}</h3>
         <p>${escapeHtml(p.short_description||"")}</p>
         <span class="arrow">→</span>
       </div>
