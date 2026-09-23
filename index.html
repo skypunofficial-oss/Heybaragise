@@ -4,17 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Heybaragise 🌻🐰 | Premium Apps</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-
-<link rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin>
-
-<link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Prompt:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-
-<link rel="stylesheet" href="style.css?v=65">
+<link rel="stylesheet" href="style.css?v=66">
 </head>
 <body>
   <div class="orb orb1"></div><div class="orb orb2"></div>
@@ -22,10 +12,10 @@
   <header class="glass header">
 <button
     id="brand"
-    class="brand font-en"
+    class="brand"
     type="button"
 >
-    Heybaragise 🌻 store
+    𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
 </button>
     
     <div
@@ -43,25 +33,20 @@
     <section id="homeView" class="view active">
 <div class="hero-brand">
 
-    <h1 class="store-name">𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒</h1>
+    <h1 class="store-name">
+        𝐻𝑒𝓎𝒷𝒶𝓇𝒶𝑔𝒾 𝓈𝓉🌻𝓇𝑒
+    </h1>
 
     <p class="hero-line blue-line">
         🩵 ꜱᴛᴀʀᴛ ʏᴏᴜʀ ᴅᴀʏ ʀɪɢʜᴛ
         ᴡɪᴛʜ ᴡʜᴀᴛ ʏᴏᴜ ʟᴏᴠᴇ! 🩷
     </p>
 
-    <p class="hero-line yellow-line font-en">
-        🌻 Let's grow together! 💛
+    <p class="hero-line yellow-line">
+        🌻 𝐋𝐞𝐭'𝐬 𝐠𝐫𝐨𝐰 𝐭𝐨𝐠𝐞𝐭𝐡𝐞𝐫! 💛
     </p>
 
 </div>
-      <section id="homeComboSection" class="home-combo-section" hidden>
-        <div class="section-head combo-home-head">
-          <h2>🤝 Combo พิเศษ</h2>
-        </div>
-        <div id="homeComboGrid" class="promo-grid"></div>
-      </section>
-
       <div class="section-head"><h2>🔥 สินค้าทั้งหมด</h2><input id="search" placeholder="ค้นหาสินค้า..." /></div>
       <div id="productGrid" class="product-grid"></div>
     </section>
@@ -82,7 +67,11 @@
     </section>
 
     <section id="contactView" class="view">
-      <div class="glass info-card"><h2>🌻🐰 Heybaragise</h2><p>เลือกช่องทางติดต่อหรือสั่งซื้อผ่านลิงก์ที่ร้านกำหนด</p></div>
+      <div class="glass info-card">
+        <h2>🌻🐰 Heybaragise</h2>
+        <p>เลือกช่องทางติดต่อหรือสั่งซื้อผ่านช่องทางของร้าน</p>
+        <div id="contactLinks" class="contact-grid"></div>
+      </div>
     </section>
 
     <section id="adminView" class="view">
@@ -193,6 +182,7 @@
   <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=62"></script>
+  <script src="app.js?v=61"></script>
 </body>
 </html>
+
