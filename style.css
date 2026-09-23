@@ -1081,72 +1081,143 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
   }
 }
 
-/* v62 — English/Korean uploaded Yuntaeng font + Home Combo section */
-.font-en {
-  font-family: "OngleipYuntaeng", "LKKaohom", sans-serif !important;
-  font-weight: normal !important;
+/* =========================================================
+   HEYBARAGISE v65 — AUTHORITATIVE FONT RULES
+   Thai = LKKaohom
+   English + Korean = Ongleip Yuntaeng
+========================================================= */
+
+html, body {
   font-style: normal !important;
 }
-.store-name.font-en,
-.brand.font-en,
-.card-body h3.font-en,
-.combo-card h3.font-en,
-.combo-product-detail h2.font-en {
-  font-family: "OngleipYuntaeng", "LKKaohom", sans-serif !important;
+
+body,
+button,
+input,
+textarea,
+select,
+label,
+h1, h2, h3, h4, h5, h6,
+.section-title,
+.section-head,
+.card-body,
+.detail-hero,
+.modal,
+.modal * {
+  font-family: "LKKaohom", sans-serif !important;
   font-style: normal !important;
 }
-.home-combo-section {
-  margin: 28px 0 34px;
-}
-.combo-home-head {
-  margin-bottom: 14px;
-}
-#homeComboSection[hidden] {
-  display: none !important;
-}
-#homeComboGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-@media (max-width: 700px) {
-  #homeComboGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 11px;
-  }
-}
 
-
-/* v63 — Store name: force the uploaded Yuntaeng font, normal style */
-.store-name,
-.store-name.font-en {
+.font-en,
+.font-en * {
   font-family: "OngleipYuntaeng", sans-serif !important;
   font-style: normal !important;
   font-weight: normal !important;
-  text-transform: none !important;
-  letter-spacing: 0 !important;
 }
 
-/* v63 — Home Combo section */
-.home-combo-section {
-  display: block;
-  margin: 18px 0 28px;
-}
-.home-combo-section[hidden] {
-  display: none !important;
-}
-.home-combo-section .combo-home-head {
-  margin-bottom: 10px;
+/* English/Korean elements that are explicitly marked by the app */
+.store-name.font-en,
+.product-card .font-en,
+.combo-card .font-en,
+.combo-detail .font-en,
+.package-item .font-en,
+.price .font-en,
+button.font-en,
+a.font-en {
+  font-family: "OngleipYuntaeng", sans-serif !important;
+  font-style: normal !important;
 }
 
+/* Store heading: keep its existing font choice, only center it */
+.hero,
+.store-name,
+.hero-line {
+  text-align: center !important;
+}
 
-/* v64 — keep original store font, center the store text only */
-.hero-brand {
+.store-name {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Combo on the home page: same visual scale as product cards */
+.combo-grid,
+.combos-grid,
+#comboGrid,
+#combosGrid,
+#promotionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.combo-card,
+.combos-card {
   width: 100%;
-  text-align: center !important;
-}
-.hero-brand .store-name,
-.hero-brand .hero-line {
-  text-align: center !important;
-  margin-left: auto;
-  margin-right: auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
+.combo-image,
+.combos-image,
+.combo-card img,
+.combos-card img,
+.combo-grid img,
+.combos-grid img,
+#comboGrid img,
+#combosGrid img,
+#promotionGrid .promo-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  max-width: 100%;
+}
+
+/* Combo detail: two product images side-by-side, not oversized */
+.combo-detail-image-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.combo-detail-product-image,
+.combo-detail-product-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  object-fit: cover;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .combo-grid,
+  .combos-grid,
+  #comboGrid,
+  #combosGrid,
+  #promotionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .combo-image,
+  .combos-image,
+  .combo-card img,
+  .combos-card img,
+  .combo-grid img,
+  .combos-grid img,
+  #comboGrid img,
+  #combosGrid img,
+  #promotionGrid .promo-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .combo-detail-image-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
