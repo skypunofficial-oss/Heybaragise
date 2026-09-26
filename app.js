@@ -66,6 +66,7 @@ function enrichCombo(combo){
   return {...combo, combo_items:items};
 }
 
+
 function renderProducts(list=state.products){
   $("#productGrid").innerHTML = list.length ? list.map(p=>`
     <article class="product-card glass" data-id="${p.id}">
@@ -78,6 +79,37 @@ function renderProducts(list=state.products){
       </div>
     </article>`).join("") : `<div class="empty">ยังไม่มีสินค้า</div>`;
   $$("#productGrid .product-card").forEach(card=>card.onclick=()=>openProduct(card.dataset.id));
+}
+function renderHomeCombos(){
+  const el = $("#homeComboGrid");
+  if (!el) return;
+
+  const combos = state.combos || [];
+
+  el.innerHTML = combos.length
+    ? combos.map(c => `
+      <article class="combo-card promo-card glass" data-combo-id="${c.id}">
+        <div class="combo-image-row">
+          ${(c.combo_items || []).slice(0,2).map(i =>
+            i.products?.image_url
+              ? `<img class="combo-product-image" src="${i.products.image_url}" alt="">`
+              : `<div class="combo-product-placeholder">${escapeHtml(i.products?.icon || "📱")}</div>`
+          ).join("")}
+        </div>
+
+        <div class="card-body">
+          <span class="badge">🤝 Combo Deal</span>
+          <h3>${mixedText(c.name)}</h3>
+          <p>${richText(c.description || "")}</p>
+          <div class="price-sale">฿${money(c.sale_price)}</div>
+        </div>
+      </article>
+    `).join("")
+    : `<div class="empty">ยังไม่มี Combo พิเศษ</div>`;
+
+  $$("#homeComboGrid .combo-card").forEach(card => {
+    card.onclick = () => openCombo(card.dataset.comboId);
+  });
 }
 
 function renderPromotions(){
