@@ -171,7 +171,7 @@ function openCombo(id){
       <div class="combo-detail-image-row">${images}</div>
       <span class="badge">🤝 Combo Deal</span>
       <h1>${mixedText(c.name)}</h1>
-      <p class="detail-description">${escapeHtml(c.description||"")}</p>
+      <p class="detail-description">${richText(c.description||"")}</p>
       <div class="combo-detail-price">
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
         <strong>฿${money(c.sale_price)}</strong>
