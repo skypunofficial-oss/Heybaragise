@@ -54,7 +54,7 @@ async function loadAll(){
   state.products=p.data||[];
   state.promotions=pr.data||[];
   state.combos=(c.data||[]).map(enrichCombo);
-  renderProducts(); renderPromotions();
+  renderProducts(); renderPromotions(); renderHomeCombos();
 }
 
 function enrichCombo(combo){
