@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Heybaragise 🌻🐰 | Premium Apps</title>
-<link rel="stylesheet" href="style.css?v=68">
+<link rel="stylesheet" href="style.css?v=69">
 </head>
 <body>
   <div class="orb orb1"></div><div class="orb orb2"></div>
@@ -87,6 +87,7 @@
         <button class="tab active" data-admin-tab="products">สินค้า</button>
         <button class="tab" data-admin-tab="promotions">โปรโมชั่น</button>
         <button class="tab" data-admin-tab="combos">Combo</button>
+        <button class="tab" data-admin-tab="social">🌐 ติดต่อ</button>
       </div>
 
       <div id="adminProducts" class="admin-panel active">
@@ -102,6 +103,15 @@
       <div id="adminCombos" class="admin-panel">
         <button id="addComboBtn" class="primary">＋ สร้าง Combo ลดราคา</button>
         <div id="adminComboList" class="admin-list"></div>
+      </div>
+
+      <div id="adminSocial" class="admin-panel">
+        <div class="panel-intro">
+          <h3>🌐 ช่องทางติดต่อ</h3>
+          <p>เพิ่ม Instagram, X, LINE หรือช่องทางอื่นของร้าน</p>
+        </div>
+        <button id="addSocialBtn" class="primary">＋ เพิ่มช่องทางติดต่อ</button>
+        <div id="adminSocialList" class="admin-list"></div>
       </div>
     </section>
   </main>
@@ -182,9 +192,23 @@
     </form>
   </dialog>
 
+  <dialog id="socialDialog" class="modal glass">
+    <button class="close" data-close="socialDialog">×</button>
+    <h2 id="socialFormTitle">เพิ่มช่องทางติดต่อ</h2>
+    <form id="socialForm">
+      <input type="hidden" id="socialId" />
+      <label>ชื่อช่องทาง<input id="socialName" required placeholder="Instagram / LINE / X" /></label>
+      <label>รูปโลโก้<input id="socialImage" type="file" accept="image/*" /></label>
+      <label>ลิงก์ภายนอก<input id="socialUrl" type="url" required placeholder="https://instagram.com/..." /></label>
+      <label>ลำดับ<input id="socialSort" type="number" min="0" value="0" /></label>
+      <label class="check"><input id="socialActive" type="checkbox" checked /> เปิดแสดง</label>
+      <button class="primary" type="submit">บันทึกช่องทาง</button>
+    </form>
+  </dialog>
+
   <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=67"></script>
+  <script src="app.js?v=69"></script>
 </body>
 </html>
