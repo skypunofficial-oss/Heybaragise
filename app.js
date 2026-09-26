@@ -1,3 +1,4 @@
+// Heybaragise app.js v69 — based on v68
 // ============================
 // 1) ใส่ค่าจาก Supabase Project Settings > API
 // ============================
@@ -18,18 +19,24 @@ const sb = supabase.createClient(
   }
 );
 
-const state = { products: [], promotions: [], combos: [], selectedProduct: null, isAdmin: false, adminProducts: [], adminPromotions: [], adminCombos: [], adminSocialLinks: [] };
+const state = { products: [], promotions: [], combos: [], selectedProduct: null, isAdmin: false };
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 $("#year").textContent = new Date().getFullYear();
 
 function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
-function money(v){ return Number(v||0).toLocaleString("th-TH",{maximumFractionDigits:2}); }
-function isValidExternalUrl(value){
-  if(!value) return true;
-  try{ const u=new URL(value); return u.protocol==="http:" || u.protocol==="https:"; }
-  catch{return false;}
+function mixedText(v=""){
+  const s = escapeHtml(v);
+  return s.replace(/[A-Za-z0-9][A-Za-z0-9 .&+/'’_-]*[A-Za-z0-9]|[가-힣ㄱ-ㅎㅏ-ㅣ]+/g, m => `<span class="font-en">${m}</span>`);
 }
+function richText(v=""){
+  return String(v ?? "")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map(line => mixedText(line))
+    .join("<br>");
+}
+function money(v){ return Number(v||0).toLocaleString("th-TH",{maximumFractionDigits:2}); }
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
 function showView(id){ $$(".view").forEach(x=>x.classList.remove("active")); $("#"+id+"View").classList.add("active"); window.scrollTo({top:0,behavior:"smooth"}); }
 function openDialog(id){ $("#"+id).showModal(); }
@@ -47,7 +54,7 @@ async function loadAll(){
   state.products=p.data||[];
   state.promotions=pr.data||[];
   state.combos=(c.data||[]).map(enrichCombo);
-  renderProducts(); renderHomeCombos(); renderPromotions();
+  renderProducts(); renderPromotions();
 }
 
 function enrichCombo(combo){
@@ -59,40 +66,14 @@ function enrichCombo(combo){
   return {...combo, combo_items:items};
 }
 
-
-function renderHomeCombos(){
-  const el = $("#homeComboGrid");
-  if(!el) return;
-  const combos = state.combos || [];
-  el.innerHTML = combos.length ? combos.map(c=>`
-    <article class="combo-card home-combo-card glass" data-combo-id="${c.id}">
-      <div class="combo-image-row">
-        ${(c.combo_items||[]).slice(0,2).map(i=>i.products?.image_url
-          ? `<img class="combo-product-image" src="${i.products.image_url}" alt="${escapeHtml(i.products?.name||"")}">`
-          : `<div class="combo-product-placeholder">${escapeHtml(i.products?.icon||"📱")}</div>`
-        ).join("")}
-      </div>
-      <div class="card-body">
-        <span class="badge">🤝 Combo Deal</span>
-        <h3 class="font-en">${escapeHtml(c.name)}</h3>
-        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
-        ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
-        <div class="price-sale">฿${money(c.sale_price)}</div>
-      </div>
-    </article>`).join("") : "";
-  $$("#homeComboGrid .combo-card").forEach(card=>{
-    card.onclick=()=>openCombo(card.dataset.comboId);
-  });
-}
-
 function renderProducts(list=state.products){
   $("#productGrid").innerHTML = list.length ? list.map(p=>`
     <article class="product-card glass" data-id="${p.id}">
       ${p.image_url?`<img class="product-image" src="${p.image_url}" alt="${escapeHtml(p.name)}">`:""}
       <div class="card-body">
         <div class="product-icon">${escapeHtml(p.icon||"📱")}</div>
-        <h3 class="font-en">${escapeHtml(p.name)}</h3>
-        <p>${escapeHtml(p.short_description||"")}</p>
+        <h3>${mixedText(p.name)}</h3>
+        <p>${richText(p.short_description||"")}</p>
         <span class="arrow">→</span>
       </div>
     </article>`).join("") : `<div class="empty">ยังไม่มีสินค้า</div>`;
@@ -104,7 +85,7 @@ function renderPromotions(){
     <article class="promo-card glass">
       ${p.image_url?`<img class="promo-image" src="${p.image_url}" alt="">`:``}
       <div class="card-body"><span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
-      <h3>${escapeHtml(p.title)}</h3><p>${escapeHtml(p.description||"")}</p>
+      <h3>${mixedText(p.title)}</h3><p>${richText(p.description||"")}</p>
       ${p.external_url?`<a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ดูเพิ่มเติม ↗</a>`:""}</div>
     </article>`).join("");
 
@@ -118,9 +99,9 @@ function renderPromotions(){
       </div>
       <div class="card-body">
         <span class="badge">🤝 Combo Deal</span>
-        <h3 class="font-en">${escapeHtml(c.name)}</h3>
-        <p>${escapeHtml(c.description||"")}</p>
-        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${escapeHtml(i.products?.name||"")} · ${escapeHtml(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
+        <h3>${mixedText(c.name)}</h3>
+        <p>${richText(c.description||"")}</p>
+        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${mixedText(i.products?.name||"")} · ${mixedText(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
         <div class="price-sale">฿${money(c.sale_price)}</div>
       </div>
@@ -142,13 +123,13 @@ function openCombo(id){
       <div class="combo-detail-heading">
         ${i.products?.image_url?`<img class="combo-detail-small-image" src="${i.products.image_url}" alt="">`:`<span class="combo-detail-icon">${escapeHtml(i.products?.icon||"📱")}</span>`}
         <div>
-          <span class="badge font-en">${escapeHtml(i.products?.name||"สินค้า")}</span>
-          <h2 class="font-en">${escapeHtml(i.products?.name||"สินค้า")}</h2>
+          <span class="badge">${mixedText(i.products?.name||"สินค้า")}</span>
+          <h2>${mixedText(i.products?.name||"สินค้า")}</h2>
         </div>
       </div>
-      <p class="detail-description">${escapeHtml(i.products?.description||i.products?.short_description||"")}</p>
+      <p class="detail-description">${richText(i.products?.description||i.products?.short_description||"")}</p>
       <div class="package combo-selected-package">
-        <span>${escapeHtml(i.packages?.name||"แพ็กเกจที่เลือก")}</span>
+        <span>${mixedText(i.packages?.name||"แพ็กเกจที่เลือก")}</span>
         <b>฿${money(i.packages?.price)}</b>
       </div>
     </section>`).join("");
@@ -157,13 +138,13 @@ function openCombo(id){
     <div class="detail-hero glass combo-detail-hero">
       <div class="combo-detail-image-row">${images}</div>
       <span class="badge">🤝 Combo Deal</span>
-      <h1 class="font-en">${escapeHtml(c.name)}</h1>
+      <h1>${mixedText(c.name)}</h1>
       <p class="detail-description">${escapeHtml(c.description||"")}</p>
       <div class="combo-detail-price">
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
         <strong>฿${money(c.sale_price)}</strong>
       </div>
-      ${c.external_url?`<p style="margin-top:18px"><a class="external-link" href="${c.external_url}" target="_blank" rel="noopener"> สั่งซื้อ ↗</a></p>`:""}
+      ${c.external_url?`<p style="margin-top:18px"><a class="external-link" href="${c.external_url}" target="_blank" rel="noopener">รับ Combo / สั่งซื้อ ↗</a></p>`:""}
     </div>
     <div class="detail-grid combo-detail-grid">${details}</div>`;
   showView("comboDetail");
@@ -172,19 +153,19 @@ function openCombo(id){
 function openProduct(id){
   const p=state.products.find(x=>x.id===id); if(!p)return;
   state.selectedProduct=p;
-  const packages=(p.packages||[]).map(x=>`<div class="package"><span>${escapeHtml(x.name)}</span><b>฿${money(x.price)}</b></div>`).join("")||"<p>สอบถามราคาเพิ่มเติมได้</p>";
+  const packages=(p.packages||[]).map(x=>`<div class="package"><span>${mixedText(x.name)}</span><b>฿${money(x.price)}</b></div>`).join("")||"<p>สอบถามราคาเพิ่มเติมได้</p>";
   const related=state.promotions.filter(x=>x.product_id===p.id);
   $("#productDetail").innerHTML=`
     <div class="detail-hero glass"><div class="detail-top">
       ${p.image_url?`<img class="detail-image" src="${p.image_url}" alt="">`:`<div class="detail-icon">${escapeHtml(p.icon||"📱")}</div>`}
-      <div><span class="badge">Premium App</span><h1 class="font-en">${escapeHtml(p.name)}</h1><p>${escapeHtml(p.description||p.short_description||"")}</p></div>
+      <div><span class="badge">Premium App</span><h1>${mixedText(p.name)}</h1><p>${richText(p.description||p.short_description||"")}</p></div>
     </div></div>
     <div class="detail-grid">
       <section class="info-card glass"><h2>💳 ราคาแพ็กเกจ</h2>${packages}</section>
-      <section class="info-card glass"><h2>🎁 โปรโมชั่น</h2>${related.length?related.map(x=>`<div class="package">${escapeHtml(x.title)}</div>`).join(""):"<p>ยังไม่มีโปรโมชั่น</p>"}</section>
+      <section class="info-card glass"><h2>🎁 โปรโมชั่น</h2>${related.length?related.map(x=>`<div class="package">${mixedText(x.title)}</div>`).join(""):"<p>ยังไม่มีโปรโมชั่น</p>"}</section>
       <section class="info-card glass"><h2>🎬 น่าดู / แนะนำ</h2><p>Admin สามารถใช้ “โปรโมชั่น” เพิ่ม Poster ซีรีส์ หนัง หรือคอนเทนต์น่าดูของแต่ละแอปได้ พร้อมรูปและลิงก์ภายนอก</p></section>
     </div>
-    ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">สั่งซื้อ/สอบถาม ↗</a></p>`:""}`;
+    ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ไปยังลิงก์ภายนอก / สั่งซื้อ ↗</a></p>`:""}`;
   showView("detail");
 }
 const searchInput = $("#search");
@@ -195,7 +176,7 @@ if (searchInput) {
 
     renderProducts(
       state.products.filter(p =>
-        `${p.name} ${p.short_description}`
+        `${p.name} ${p.short_description} ${p.description}`
           .toLowerCase()
           .includes(q)
       )
@@ -313,120 +294,23 @@ $$(".tab").forEach(t=>t.addEventListener("click",()=>{
 }));
 
 async function loadAdminData(){
-  const [p,pr,c,s]=await Promise.all([
+  const [p,pr,c]=await Promise.all([
     sb.from("products").select("*, packages(*)").order("sort_order"),
     sb.from("promotions").select("*").order("created_at",{ascending:false}),
-    sb.from("combos").select("*, combo_items(product_id, package_id)").order("created_at",{ascending:false}),
-    sb.from("social_links").select("*").order("sort_order",{ascending:true})
+    sb.from("combos").select("*, combo_items(product_id, package_id)").order("created_at",{ascending:false})
   ]);
-  if(p.error) console.error(p.error);
-  if(pr.error) console.error(pr.error);
-  if(c.error) console.error(c.error);
-  if(s.error) console.error(s.error);
   state.adminProducts=p.data||[];
   state.adminPromotions=pr.data||[];
   state.adminCombos=(c.data||[]).map(enrichCombo);
-  state.adminSocialLinks=s.data||[];
   renderAdmin();
 }
 
 function renderAdmin(){
-  $("#adminProductList").innerHTML=state.adminProducts.map(p=>adminRow(`${p.icon||"📱"} ${escapeHtml(p.name)}`,p.active,`editProduct('${p.id}')`,`deleteProduct('${p.id}')`)).join("")||"<div class='empty'>ไม่มีสินค้า</div>";
-  $("#adminPromoList").innerHTML=state.adminPromotions.map(p=>adminRow(`🎁 ${escapeHtml(p.title)}`,p.active,`editPromo('${p.id}')`,`deletePromo('${p.id}')`)).join("")||"<div class='empty'>ไม่มีโปรโมชั่น</div>";
-  $("#adminComboList").innerHTML=state.adminCombos.map(c=>adminRow(`🤝 ${escapeHtml(c.name)} — ฿${money(c.sale_price)}`,c.active,`editCombo('${c.id}')`,`deleteCombo('${c.id}')`)).join("")||"<div class='empty'>ไม่มี Combo</div>";
-  renderAdminSocial();
+  $("#adminProductList").innerHTML=state.adminProducts.map(p=>adminRow(`${p.icon||"📱"} ${p.name}`,p.active,`editProduct('${p.id}')`,`deleteProduct('${p.id}')`)).join("")||"<div class='empty'>ไม่มีสินค้า</div>";
+  $("#adminPromoList").innerHTML=state.adminPromotions.map(p=>adminRow(`🎁 ${p.title}`,p.active,`editPromo('${p.id}')`,`deletePromo('${p.id}')`)).join("")||"<div class='empty'>ไม่มีโปรโมชั่น</div>";
+  $("#adminComboList").innerHTML=state.adminCombos.map(c=>adminRow(`🤝 ${c.name} — ฿${money(c.sale_price)}`,c.active,`editCombo('${c.id}')`,`deleteCombo('${c.id}')`)).join("")||"<div class='empty'>ไม่มี Combo</div>";
 }
 function adminRow(title,active,edit,del){return `<div class="admin-row glass"><div><b>${escapeHtml(title)}</b><p>${active?"🟢 แสดง":"⚪ ซ่อน"}</p></div><div class="admin-actions"><button class="small" onclick="${edit}">✏️ แก้ไข</button><button class="small danger" onclick="${del}">🗑 ลบ</button></div></div>`;}
-
-// SOCIAL / CONTACT CRUD
-$("#addSocialBtn")?.addEventListener("click",()=>{
-  resetSocialForm();
-  openDialog("socialDialog");
-});
-
-function resetSocialForm(){
-  $("#socialForm")?.reset();
-  $("#socialId").value="";
-  $("#socialSort").value=0;
-  $("#socialActive").checked=true;
-  $("#socialFormTitle").textContent="เพิ่มช่องทางติดต่อ";
-}
-
-function renderAdminSocial(){
-  const list=$("#adminSocialList");
-  if(!list)return;
-  list.innerHTML=state.adminSocialLinks.map(item=>
-    adminRow(`🌐 ${escapeHtml(item.name||"ช่องทางติดต่อ")}`,!!item.is_active,`editSocial('${item.id}')`,`deleteSocial('${item.id}')`,item.external_url||"")
-  ).join("") || "<div class='empty'>ยังไม่มีช่องทางติดต่อ</div>";
-}
-
-window.editSocial=id=>{
-  const item=state.adminSocialLinks.find(x=>String(x.id)===String(id));
-  if(!item)return;
-  resetSocialForm();
-  $("#socialId").value=item.id;
-  $("#socialName").value=item.name||"";
-  $("#socialUrl").value=item.external_url||"";
-  $("#socialSort").value=item.sort_order??0;
-  $("#socialActive").checked=!!item.is_active;
-  $("#socialFormTitle").textContent="แก้ไขช่องทางติดต่อ";
-  openDialog("socialDialog");
-};
-
-$("#socialForm")?.addEventListener("submit",async e=>{
-  e.preventDefault();
-  try{
-    const id=$("#socialId").value;
-    const file=$("#socialImage").files?.[0];
-    let iconUrl=null;
-    if(file) iconUrl=await uploadImage(file,"social");
-
-    const payload={
-      name:$("#socialName").value.trim(),
-      external_url:$("#socialUrl").value.trim(),
-      sort_order:Number($("#socialSort").value||0),
-      is_active:$("#socialActive").checked
-    };
-    if(!payload.name) throw new Error("กรุณาใส่ชื่อช่องทางติดต่อ");
-    if(!isValidExternalUrl(payload.external_url)) throw new Error("ลิงก์ติดต่อ ต้องเป็น http:// หรือ https://");
-    if(iconUrl) payload.icon_url=iconUrl;
-
-    if(id){
-      // Keep existing logo when no new image is selected.
-      const result=await sb.from("social_links").update(payload).eq("id",id);
-      if(result.error)throw result.error;
-    }else{
-      if(!payload.icon_url) throw new Error("กรุณาแนบรูปโลโก้ช่องทางติดต่อ");
-      const result=await sb.from("social_links").insert(payload);
-      if(result.error)throw result.error;
-    }
-
-    closeDialog("socialDialog");
-    await refreshSocial();
-    toast("บันทึกช่องทางติดต่อแล้ว");
-  }catch(err){
-    console.error("Social save error:",err);
-    toast(err.message||"บันทึกช่องทางติดต่อไม่สำเร็จ");
-  }
-});
-
-window.deleteSocial=async id=>{
-  if(!confirm("ลบช่องทางติดต่อนี้?"))return;
-  const result=await sb.from("social_links").delete().eq("id",id);
-  if(result.error){toast(result.error.message);return;}
-  await refreshSocial();
-  toast("ลบช่องทางติดต่อแล้ว");
-};
-
-async function refreshSocial(){
-  await loadSocialLinks();
-  if(state.isAdmin){
-    const {data,error}=await sb.from("social_links").select("*").order("sort_order",{ascending:true});
-    if(error) console.error(error);
-    state.adminSocialLinks=data||[];
-    renderAdminSocial();
-  }
-}
 
 async function uploadImage(file,folder="images"){
   if(!file)return null;
@@ -578,44 +462,48 @@ loadAll();
 loadSocialLinks();
 
 async function loadSocialLinks() {
+
   const { data, error } = await sb
     .from("social_links")
     .select("*")
     .eq("is_active", true)
-    .order("sort_order", { ascending: true });
+    .order("sort_order", {
+      ascending: true
+    });
 
   if (error) {
     console.error("Social links error:", error);
     return;
   }
+
   renderSocialLinks(data || []);
 }
 
+
 function renderSocialLinks(items) {
-  const safe = items || [];
 
-  const header = $("#socialLinks");
-  if (header) {
-    header.innerHTML = safe.map(item => `
-      <a href="${escapeHtml(item.external_url || "#")}"
-         target="_blank" rel="noopener noreferrer"
-         class="social-link" aria-label="${escapeHtml(item.name || "")}">
-        <img src="${escapeHtml(item.icon_url || "")}" alt="${escapeHtml(item.name || "")}">
-      </a>
-    `).join("");
-  }
+  const container = $("#socialLinks");
 
-  const contact = $("#contactLinks");
-  if (contact) {
-    contact.innerHTML = safe.length ? safe.map(item => `
-      <a href="${escapeHtml(item.external_url || "#")}"
-         target="_blank" rel="noopener noreferrer"
-         class="contact-link">
-        <img src="${escapeHtml(item.icon_url || "")}" alt="">
-        <span>${escapeHtml(item.name || "ติดต่อร้าน")}</span>
-      </a>
-    `).join("") : `<div class="empty">ยังไม่มีช่องทางติดต่อ</div>`;
-  }
+  if (!container) return;
+
+
+  container.innerHTML = items.map(item => `
+
+    <a
+      href="${item.external_url}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-link"
+      aria-label="${item.name}"
+    >
+
+      <img
+        src="${item.icon_url}"
+        alt="${item.name}"
+      >
+
+    </a>
+
+  `).join("");
+
 }
-
-loadSocialLinks();
