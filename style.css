@@ -1180,3 +1180,49 @@ body, button, input, textarea, select, label, h1, h2, h3, h4, h5, h6 {
   .contact-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
+
+/* =========================================================
+   HEYBARAGISE v69 — ADMIN CONTACT + FONT STABILITY
+========================================================= */
+@font-face {
+  font-family: "LKKaohom";
+  src: url("fonts/LKKaohom-Freecomm.ttf") format("truetype");
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "OngleipYuntaeng";
+  src: url("fonts/Ongleip_Yuntaeng.ttf") format("truetype");
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
+.font-en,
+.font-en * {
+  font-family: "OngleipYuntaeng", sans-serif !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+}
+
+/* Admin contact tab remains reachable on small screens by horizontal swipe */
+.admin-tabs {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  white-space: nowrap;
+}
+.admin-tabs .tab { white-space: nowrap; }
+
+.social-admin-note {
+  margin-top: 8px;
+  color: #8793a6;
+}
+
+.admin-row small {
+  display: block;
+  margin-top: 4px;
+  color: #94a0b2;
+  word-break: break-all;
+}
