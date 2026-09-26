@@ -163,7 +163,7 @@ function openCombo(id){
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
         <strong>฿${money(c.sale_price)}</strong>
       </div>
-      ${c.external_url?`<p style="margin-top:18px"><a class="external-link" href="${c.external_url}" target="_blank" rel="noopener">รับ Combo / สั่งซื้อ ↗</a></p>`:""}
+      ${c.external_url?`<p style="margin-top:18px"><a class="external-link" href="${c.external_url}" target="_blank" rel="noopener"> สั่งซื้อ ↗</a></p>`:""}
     </div>
     <div class="detail-grid combo-detail-grid">${details}</div>`;
   showView("comboDetail");
@@ -184,7 +184,7 @@ function openProduct(id){
       <section class="info-card glass"><h2>🎁 โปรโมชั่น</h2>${related.length?related.map(x=>`<div class="package">${escapeHtml(x.title)}</div>`).join(""):"<p>ยังไม่มีโปรโมชั่น</p>"}</section>
       <section class="info-card glass"><h2>🎬 น่าดู / แนะนำ</h2><p>Admin สามารถใช้ “โปรโมชั่น” เพิ่ม Poster ซีรีส์ หนัง หรือคอนเทนต์น่าดูของแต่ละแอปได้ พร้อมรูปและลิงก์ภายนอก</p></section>
     </div>
-    ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ไปยังลิงก์ภายนอก / สั่งซื้อ ↗</a></p>`:""}`;
+    ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">สั่งซื้อ/สอบถาม ↗</a></p>`:""}`;
   showView("detail");
 }
 const searchInput = $("#search");
