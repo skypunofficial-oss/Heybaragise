@@ -1185,7 +1185,67 @@ body, button, input, textarea, select, label, h1, h2, h3, h4, h5, h6 {
    HEYBARAGISE v69 — ADMIN CONTACT + FONT STABILITY
 ========================================================= */
 @font-face {
-  font-family: "LKKaohom";
+  font-fa
+     /* =========================================================
+   MOBILE — Glass cards inset 1cm
+========================================================= */
+@media (max-width: 700px) {
+
+  /* กระจกฝ้าทุกส่วนในหน้ารายละเอียด */
+  #detailView .glass,
+  #comboDetailView .glass {
+    width: calc(100% - 20px);
+    margin-left: 10px;
+    margin-right: 10px;
+    box-sizing: border-box;
+  }
+
+  /* กล่องรายละเอียดหลัก */
+  #detailView .detail-hero,
+  #comboDetailView .combo-detail-hero {
+    padding: 16px;
+  }
+
+  /* ชื่อสินค้า */
+  #detailView .detail-hero h1,
+  #comboDetailView .combo-detail-hero h1 {
+    font-size: 23px;
+    line-height: 1.25;
+  }
+
+  /* รายละเอียดสินค้า */
+  #detailView .detail-description,
+  #comboDetailView .detail-description {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  /* หัวข้อ เช่น ราคาแพ็กเกจ */
+  #detailView .info-card h2,
+  #comboDetailView .info-card h2 {
+    font-size: 20px;
+    line-height: 1.35;
+  }
+
+  /* รายการแพ็กเกจ */
+  #detailView .package,
+  #comboDetailView .package {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ราคาด้านขวา */
+  #detailView .package b,
+  #comboDetailView .package b {
+    font-size: 18px;
+  }
+
+  /* ป้าย Premium App */
+  #detailView .badge,
+  #comboDetailView .badge {
+    font-size: 12px;
+  }
+}mily: "LKKaohom";
   src: url("fonts/LKKaohom-Freecomm.ttf") format("truetype");
   font-style: normal;
   font-weight: normal;
