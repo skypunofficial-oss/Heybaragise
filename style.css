@@ -1286,3 +1286,43 @@ body, button, input, textarea, select, label, h1, h2, h3, h4, h5, h6 {
   color: #94a0b2;
   word-break: break-all;
 }
+/* 📱 Mobile: แสดงสินค้า 3 ช่อง */
+@media (max-width: 700px) {
+  #productGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  #productGrid .product-card {
+    min-width: 0;
+  }
+
+  #productGrid .product-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  #productGrid .card-body {
+    padding: 8px;
+  }
+
+  #productGrid .card-body h3 {
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  #productGrid .card-body p {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  #productGrid .price-sale {
+    font-size: 16px;
+  }
+
+  #productGrid .badge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
