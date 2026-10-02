@@ -1,4 +1,4 @@
-// Heybaragise app.js v69 — based on v68
+// Heybaragise app.js v77 — promo detail + recommendations + social admin + 3-column mobile
 // ============================
 // 1) ใส่ค่าจาก Supabase Project Settings > API
 // ============================
@@ -19,7 +19,7 @@ const sb = supabase.createClient(
   }
 );
 
-const state = { products: [], promotions: [], combos: [], recommendations: [], selectedProduct: null, isAdmin: false, adminProducts: [], adminPromotions: [], adminCombos: [], adminSocial: [], adminRecommendations: [] };
+const state = { products: [], promotions: [], combos: [], recommendations: [], socialLinks: [], selectedProduct: null, isAdmin: false, adminProducts: [], adminPromotions: [], adminCombos: [], adminRecommendations: [], adminSocialLinks: [] };
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 $("#year").textContent = new Date().getFullYear();
@@ -43,21 +43,24 @@ function openDialog(id){ $("#"+id).showModal(); }
 function closeDialog(id){ $("#"+id).close(); }
 
 async function loadAll(){
-  const [p,pr,c,r] = await Promise.all([
+  const [p,pr,c,r,s] = await Promise.all([
     sb.from("products").select("*, packages(*)").eq("active",true).order("sort_order"),
     sb.from("promotions").select("*, products(name,icon)").eq("active",true).order("created_at",{ascending:false}),
     sb.from("combos").select("*, combo_items(product_id, package_id)").eq("active",true).order("created_at",{ascending:false}),
-    sb.from("recommendations").select("*, products(name,icon)").eq("active",true).order("sort_order").order("created_at",{ascending:false})
+    sb.from("recommendations").select("*, products(name,icon)").eq("active",true).order("sort_order",{ascending:true}).order("created_at",{ascending:false}),
+    sb.from("social_links").select("*").eq("is_active",true).order("sort_order",{ascending:true})
   ]);
   if(p.error) console.error(p.error);
   if(pr.error) console.error(pr.error);
   if(c.error) console.error(c.error);
   if(r.error) console.error(r.error);
+  if(s.error) console.error(s.error);
   state.products=p.data||[];
   state.promotions=pr.data||[];
   state.combos=(c.data||[]).map(enrichCombo);
   state.recommendations=r.data||[];
-  renderProducts(); renderPromotions(); renderHomeCombos();
+  state.socialLinks=s.data||[];
+  renderProducts(); renderPromotions(); renderHomeCombos(); renderSocialLinks(state.socialLinks);
 }
 
 function enrichCombo(combo){
@@ -118,10 +121,10 @@ function renderHomeCombos(){
 function renderPromotions(){
   const promos = state.promotions.map(p=>`
     <article class="promo-card glass" data-promo-id="${p.id}">
-      ${p.image_url?`<img class="promo-image" src="${p.image_url}" alt="">`:``}
+      ${p.image_url?`<img class="promo-image" src="${p.image_url}" alt="${escapeHtml(p.title)}">`:``}
       <div class="card-body"><span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
       <h3>${mixedText(p.title)}</h3><p>${richText(p.description||"")}</p>
-      <span class="external-link">ดูรายละเอียด ↗</span></div>
+      <span class="arrow">→</span></div>
     </article>`).join("");
 
   const combos = state.combos.map(c=>`
@@ -136,27 +139,37 @@ function renderPromotions(){
         <span class="badge">🤝 Combo Deal</span>
         <h3>${mixedText(c.name)}</h3>
         <p>${richText(c.description||"")}</p>
-        <p class="combo-package-summary">${(c.combo_items||[]).map(i=>`${escapeHtml(i.products?.icon||"📱")} ${mixedText(i.products?.name||"")} · ${mixedText(i.packages?.name||"แพ็กเกจ")}`).join(" + ")}</p>
         ${c.original_price?`<span class="price-old">฿${money(c.original_price)}</span>`:""}
         <div class="price-sale">฿${money(c.sale_price)}</div>
       </div>
     </article>`).join("");
 
   $("#promotionGrid").innerHTML = (promos+combos)||`<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
+  $$("#promotionGrid .promo-card[data-promo-id]").forEach(card=>card.onclick=()=>openPromo(card.dataset.promoId));
   $$("#promotionGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
 }
-function openPromotion(id){
+
+function openPromo(id){
   const p=state.promotions.find(x=>String(x.id)===String(id)); if(!p)return;
-  const target=$("#promotionDetail");
-  if(!target){
-    const dlg=document.createElement("dialog"); dlg.id="promotionDetail"; dlg.className="modal glass wide"; document.body.appendChild(dlg);
-  }
-  $("#promotionDetail").innerHTML=`<button class="close" onclick="closeDialog('promotionDetail')">×</button>
-    ${p.image_url?`<img class="promo-detail-image" src="${p.image_url}" alt="">`:``}
-    <span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
-    <h2>${mixedText(p.title)}</h2><p class="detail-description">${richText(p.description||"")}</p>
-    ${p.external_url?`<p><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ดูเพิ่มเติม / สั่งซื้อ ↗</a></p>`:""}`;
-  openDialog("promotionDetail");
+  $("#promoDetail").innerHTML=`
+    <div class="detail-hero glass promo-detail-card">
+      ${p.image_url?`<img class="promo-detail-image" src="${p.image_url}" alt="${escapeHtml(p.title)}">`:""}
+      <span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
+      <h1>${mixedText(p.title)}</h1>
+      <p class="detail-description">${richText(p.description||"")}</p>
+      ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ดูเพิ่มเติม / สั่งซื้อ ↗</a></p>`:""}
+    </div>`;
+  showView("promoDetail");
+}
+
+function renderRecommendationsForProduct(productId){
+  const list=state.recommendations.filter(x=>String(x.product_id)===String(productId));
+  if(!list.length) return `<p>ยังไม่มีรายการแนะนำ</p>`;
+  return `<div class="recommended-grid">${list.map(r=>`
+    <article class="recommendation-card glass" data-rec-id="${r.id}">
+      ${r.image_url?`<img class="recommendation-image" src="${r.image_url}" alt="${escapeHtml(r.title)}">`:``}
+      <div class="card-body"><h3>${mixedText(r.title)}</h3><p>${richText(r.description||"")}</p>${r.external_url?`<a class="external-link" href="${r.external_url}" target="_blank" rel="noopener">ดูเพิ่มเติม ↗</a>`:""}</div>
+    </article>`).join("")}</div>`;
 }
 
 function openCombo(id){
@@ -212,7 +225,7 @@ function openProduct(id){
     <div class="detail-grid">
       <section class="info-card glass"><h2>💳 ราคาแพ็กเกจ</h2>${packages}</section>
       <section class="info-card glass"><h2>🎁 โปรโมชั่น</h2>${related.length?related.map(x=>`<div class="package">${mixedText(x.title)}</div>`).join(""):"<p>ยังไม่มีโปรโมชั่น</p>"}</section>
-      <section class="info-card glass"><h2>🎬 น่าดู / แนะนำ</h2>${(()=>{const rs=state.recommendations.filter(x=>String(x.product_id)===String(p.id));return rs.length?`<div class="recommendation-list">${rs.map(x=>`<article class="recommendation-item">${x.image_url?`<img class="recommendation-image" src="${x.image_url}" alt="">`:``}<div><h3>${mixedText(x.title)}</h3><p>${richText(x.description||"")}</p>${x.external_url?`<a class="external-link" href="${x.external_url}" target="_blank" rel="noopener">ดูเพิ่มเติม ↗</a>`:""}</div></article>`).join("")}`:`<p>ยังไม่มีรายการแนะนำ</p>`})()}</section>
+      <section class="info-card glass recommended-section"><h2>🎬 น่าดู / แนะนำ</h2>${renderRecommendationsForProduct(p.id)}</section>
     </div>
     ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ไปยังลิงก์ภายนอก / สั่งซื้อ ↗</a></p>`:""}`;
   showView("detail");
@@ -343,18 +356,18 @@ $$(".tab").forEach(t=>t.addEventListener("click",()=>{
 }));
 
 async function loadAdminData(){
-  const [p,pr,c,social,recs]=await Promise.all([
+  const [p,pr,c,r,s]=await Promise.all([
     sb.from("products").select("*, packages(*)").order("sort_order"),
     sb.from("promotions").select("*").order("created_at",{ascending:false}),
     sb.from("combos").select("*, combo_items(product_id, package_id)").order("created_at",{ascending:false}),
-    sb.from("social_links").select("*").order("sort_order").order("created_at",{ascending:false}),
-    sb.from("recommendations").select("*, products(name,icon)").order("sort_order").order("created_at",{ascending:false})
+    sb.from("recommendations").select("*, products(name,icon)").order("sort_order",{ascending:true}).order("created_at",{ascending:false}),
+    sb.from("social_links").select("*").order("sort_order",{ascending:true})
   ]);
   state.adminProducts=p.data||[];
   state.adminPromotions=pr.data||[];
   state.adminCombos=(c.data||[]).map(enrichCombo);
-  state.adminSocial=social.data||[];
-  state.adminRecommendations=recs.data||[];
+  state.adminRecommendations=r.data||[];
+  state.adminSocialLinks=s.data||[];
   renderAdmin();
 }
 
@@ -362,8 +375,8 @@ function renderAdmin(){
   $("#adminProductList").innerHTML=state.adminProducts.map(p=>adminRow(`${p.icon||"📱"} ${p.name}`,p.active,`editProduct('${p.id}')`,`deleteProduct('${p.id}')`)).join("")||"<div class='empty'>ไม่มีสินค้า</div>";
   $("#adminPromoList").innerHTML=state.adminPromotions.map(p=>adminRow(`🎁 ${p.title}`,p.active,`editPromo('${p.id}')`,`deletePromo('${p.id}')`)).join("")||"<div class='empty'>ไม่มีโปรโมชั่น</div>";
   $("#adminComboList").innerHTML=state.adminCombos.map(c=>adminRow(`🤝 ${c.name} — ฿${money(c.sale_price)}`,c.active,`editCombo('${c.id}')`,`deleteCombo('${c.id}')`)).join("")||"<div class='empty'>ไม่มี Combo</div>";
-  $("#adminSocialList").innerHTML=state.adminSocial.map(x=>adminRow(`🌐 ${x.name}`,x.is_active,`editSocial('${x.id}')`,`deleteSocial('${x.id}')`)).join("")||"<div class='empty'>ยังไม่มีช่องทางติดต่อ</div>";
-  $("#adminRecommendationList").innerHTML=state.adminRecommendations.map(x=>adminRow(`🎬 ${x.products?.name||"สินค้า"} — ${x.title}`,x.active,`editRecommendation('${x.id}')`,`deleteRecommendation('${x.id}')`)).join("")||"<div class='empty'>ยังไม่มีรายการแนะนำ</div>";
+  $("#adminRecommendationList").innerHTML=state.adminRecommendations.map(r=>adminRow(`🎬 ${r.title} · ${r.products?.name||"ไม่ระบุสินค้า"}`,r.active,`editRecommendation('${r.id}')`,`deleteRecommendation('${r.id}')`)).join("")||"<div class='empty'>ยังไม่มีรายการแนะนำ</div>";
+  $("#adminSocialList").innerHTML=state.adminSocialLinks.map(s=>adminRow(`🌐 ${s.name}`,s.is_active,`editSocial('${s.id}')`,`deleteSocial('${s.id}')`)).join("")||"<div class='empty'>ยังไม่มีช่องทางติดต่อ</div>";
 }
 function adminRow(title,active,edit,del){return `<div class="admin-row glass"><div><b>${escapeHtml(title)}</b><p>${active?"🟢 แสดง":"⚪ ซ่อน"}</p></div><div class="admin-actions"><button class="small" onclick="${edit}">✏️ แก้ไข</button><button class="small danger" onclick="${del}">🗑 ลบ</button></div></div>`;}
 
@@ -432,6 +445,24 @@ $("#promoForm").addEventListener("submit",async e=>{e.preventDefault();try{
   closeDialog("promoDialog");await loadAll();await loadAdminData();toast("บันทึกโปรโมชั่นแล้ว");
 }catch(err){toast(err.message);}});
 window.deletePromo=async id=>{if(!confirm("ลบโปรโมชั่น?"))return;const {error}=await sb.from("promotions").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
+
+
+// RECOMMENDATIONS
+function fillRecommendationProductSelect(selected=""){
+  $("#recommendationProduct").innerHTML=state.adminProducts.map(p=>`<option value="${p.id}" ${String(selected)===String(p.id)?"selected":""}>${escapeHtml(p.icon||"📱")} ${escapeHtml(p.name)}</option>`).join("");
+}
+function resetRecommendationForm(){ $("#recommendationForm").reset(); $("#recommendationId").value=""; fillRecommendationProductSelect(); $("#recommendationSort").value=0; $("#recommendationActive").checked=true; $("#recommendationFormTitle").textContent="เพิ่ม น่าดู / แนะนำ"; }
+$("#addRecommendationBtn").onclick=()=>{resetRecommendationForm();openDialog("recommendationDialog");};
+window.editRecommendation=id=>{const r=state.adminRecommendations.find(x=>String(x.id)===String(id));if(!r)return;resetRecommendationForm();$("#recommendationId").value=r.id;fillRecommendationProductSelect(r.product_id);$("#recommendationTitle").value=r.title||"";$("#recommendationDescription").value=r.description||"";$("#recommendationLink").value=r.external_url||"";$("#recommendationSort").value=r.sort_order??0;$("#recommendationActive").checked=r.active;$("#recommendationFormTitle").textContent="แก้ไข น่าดู / แนะนำ";openDialog("recommendationDialog");};
+$("#recommendationForm").addEventListener("submit",async e=>{e.preventDefault();try{const id=$("#recommendationId").value;const file=$("#recommendationImage").files[0];const imageUrl=file?await uploadImage(file,"recommendations"):null;const payload={product_id:$("#recommendationProduct").value,title:$("#recommendationTitle").value.trim(),description:$("#recommendationDescription").value,external_url:$("#recommendationLink").value||null,sort_order:Number($("#recommendationSort").value||0),active:$("#recommendationActive").checked};if(imageUrl)payload.image_url=imageUrl;const q=id?sb.from("recommendations").update(payload).eq("id",id):sb.from("recommendations").insert(payload);const {error}=await q;if(error)throw error;closeDialog("recommendationDialog");await loadAll();await loadAdminData();toast("บันทึก น่าดู / แนะนำ แล้ว");}catch(err){console.error(err);toast(err.message);}});
+window.deleteRecommendation=async id=>{if(!confirm("ลบรายการแนะนำ?"))return;const {error}=await sb.from("recommendations").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
+
+// SOCIAL LINKS ADMIN
+function resetSocialForm(){ $("#socialForm").reset(); $("#socialId").value=""; $("#socialSort").value=0; $("#socialActive").checked=true; $("#socialFormTitle").textContent="เพิ่มช่องทางติดต่อ"; }
+$("#addSocialBtn").onclick=()=>{resetSocialForm();openDialog("socialDialog");};
+window.editSocial=id=>{const s=state.adminSocialLinks.find(x=>String(x.id)===String(id));if(!s)return;resetSocialForm();$("#socialId").value=s.id;$("#socialName").value=s.name||"";$("#socialUrl").value=s.external_url||"";$("#socialSort").value=s.sort_order??0;$("#socialActive").checked=s.is_active;$("#socialFormTitle").textContent="แก้ไขช่องทางติดต่อ";openDialog("socialDialog");};
+$("#socialForm").addEventListener("submit",async e=>{e.preventDefault();try{const id=$("#socialId").value;const file=$("#socialImage").files[0];const iconUrl=file?await uploadImage(file,"social"):null;const payload={name:$("#socialName").value.trim(),external_url:$("#socialUrl").value,sort_order:Number($("#socialSort").value||0),is_active:$("#socialActive").checked};if(iconUrl)payload.icon_url=iconUrl;const q=id?sb.from("social_links").update(payload).eq("id",id):sb.from("social_links").insert(payload);const {error}=await q;if(error)throw error;closeDialog("socialDialog");await loadAll();await loadAdminData();toast("บันทึกช่องทางติดต่อแล้ว");}catch(err){console.error(err);toast(err.message);}});
+window.deleteSocial=async id=>{if(!confirm("ลบช่องทางติดต่อ?"))return;const {error}=await sb.from("social_links").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
 
 // COMBO — exactly 2 products, one selected package per product
 $("#addComboBtn").onclick=()=>{resetComboForm();openDialog("comboDialog");};
@@ -513,66 +544,10 @@ $("#comboForm").addEventListener("submit",async e=>{
 });
 window.deleteCombo=async id=>{if(!confirm("ลบ Combo?"))return;const {error}=await sb.from("combos").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
 
-// SOCIAL ADMIN
-function resetSocialForm(){ $("#socialForm").reset(); $("#socialId").value=""; $("#socialSort").value=0; $("#socialActive").checked=true; $("#socialFormTitle").textContent="เพิ่มช่องทางติดต่อ"; }
-$("#addSocialBtn").onclick=()=>{resetSocialForm();openDialog("socialDialog");};
-window.editSocial=id=>{const x=state.adminSocial.find(v=>String(v.id)===String(id));if(!x)return;resetSocialForm();$("#socialId").value=x.id;$("#socialName").value=x.name||"";$("#socialUrl").value=x.external_url||"";$("#socialSort").value=x.sort_order??0;$("#socialActive").checked=x.is_active!==false;$("#socialFormTitle").textContent="แก้ไขช่องทางติดต่อ";openDialog("socialDialog");};
-$("#socialForm").addEventListener("submit",async e=>{e.preventDefault();try{const id=$("#socialId").value;let iconUrl=null;const f=$("#socialImage").files[0];if(f)iconUrl=await uploadImage(f,"social");const payload={name:$("#socialName").value,external_url:$("#socialUrl").value,sort_order:Number($("#socialSort").value||0),is_active:$("#socialActive").checked};if(iconUrl)payload.icon_url=iconUrl;const q=id?sb.from("social_links").update(payload).eq("id",id):sb.from("social_links").insert({...payload,icon_url:iconUrl||null});const {error}=await q;if(error)throw error;closeDialog("socialDialog");await loadSocialLinks();await loadAdminData();toast("บันทึกช่องทางติดต่อแล้ว");}catch(err){toast(err.message);}});
-window.deleteSocial=async id=>{if(!confirm("ลบช่องทางนี้?"))return;const {error}=await sb.from("social_links").delete().eq("id",id);if(error)return toast(error.message);await loadSocialLinks();await loadAdminData();};
-
-// RECOMMENDATIONS ADMIN
-function resetRecommendationForm(){ $("#recommendationForm").reset(); $("#recommendationId").value=""; $("#recommendationSort").value=0; $("#recommendationActive").checked=true; $("#recommendationProduct").innerHTML=state.adminProducts.map(p=>`<option value="${p.id}">${escapeHtml(p.icon||"📱")} ${escapeHtml(p.name)}</option>`).join(""); $("#recommendationFormTitle").textContent="เพิ่ม น่าดู / แนะนำ"; }
-$("#addRecommendationBtn").onclick=()=>{resetRecommendationForm();openDialog("recommendationDialog");};
-window.editRecommendation=id=>{const x=state.adminRecommendations.find(v=>String(v.id)===String(id));if(!x)return;resetRecommendationForm();$("#recommendationId").value=x.id;$("#recommendationProduct").value=x.product_id;$("#recommendationTitle").value=x.title||"";$("#recommendationDescription").value=x.description||"";$("#recommendationLink").value=x.external_url||"";$("#recommendationSort").value=x.sort_order??0;$("#recommendationActive").checked=x.active!==false;$("#recommendationFormTitle").textContent="แก้ไข น่าดู / แนะนำ";openDialog("recommendationDialog");};
-$("#recommendationForm").addEventListener("submit",async e=>{e.preventDefault();try{const id=$("#recommendationId").value;let imageUrl=null;const f=$("#recommendationImage").files[0];if(f)imageUrl=await uploadImage(f,"recommendations");const payload={product_id:$("#recommendationProduct").value,title:$("#recommendationTitle").value,description:$("#recommendationDescription").value,external_url:$("#recommendationLink").value||null,sort_order:Number($("#recommendationSort").value||0),active:$("#recommendationActive").checked};if(imageUrl)payload.image_url=imageUrl;const q=id?sb.from("recommendations").update(payload).eq("id",id):sb.from("recommendations").insert(payload);const {error}=await q;if(error)throw error;closeDialog("recommendationDialog");await loadAll();await loadAdminData();toast("บันทึก น่าดู / แนะนำแล้ว");}catch(err){toast(err.message);}});
-window.deleteRecommendation=async id=>{if(!confirm("ลบรายการแนะนำ?"))return;const {error}=await sb.from("recommendations").delete().eq("id",id);if(error)return toast(error.message);await loadAll();await loadAdminData();};
+function renderSocialLinks(items){
+  const html=(items||[]).map(item=>`<a href="${item.external_url}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="${escapeHtml(item.name)}"><img src="${item.icon_url}" alt="${escapeHtml(item.name)}"></a>`).join("");
+  const top=$("#socialLinks"); if(top) top.innerHTML=html;
+  const contact=$("#contactLinks"); if(contact) contact.innerHTML=(items||[]).map(item=>`<a class="contact-item glass" href="${item.external_url}" target="_blank" rel="noopener"><img src="${item.icon_url}" alt=""><span>${escapeHtml(item.name)}</span></a>`).join("") || "<p>ยังไม่มีช่องทางติดต่อ</p>";
+}
 
 loadAll();
-loadSocialLinks();
-
-async function loadSocialLinks() {
-
-  const { data, error } = await sb
-    .from("social_links")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", {
-      ascending: true
-    });
-
-  if (error) {
-    console.error("Social links error:", error);
-    return;
-  }
-
-  renderSocialLinks(data || []);
-}
-
-
-function renderSocialLinks(items) {
-
-  const container = $("#socialLinks");
-
-  if (!container) return;
-
-
-  container.innerHTML = items.map(item => `
-
-    <a
-      href="${item.external_url}"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="social-link"
-      aria-label="${item.name}"
-    >
-
-      <img
-        src="${item.icon_url}"
-        alt="${item.name}"
-      >
-
-    </a>
-
-  `).join("");
-
-}
