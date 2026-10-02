@@ -145,8 +145,18 @@ function renderPromotions(){
     </article>`).join("");
 
   $("#promotionGrid").innerHTML = (promos+combos)||`<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
-  $$("#promotionGrid .promo-card[data-promo-id]").forEach(card=>card.onclick=()=>openPromo(card.dataset.promoId));
-  $$("#promotionGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
+  $$("#promotionGrid .promo-card[data-promo-id]").forEach(card=>{
+    card.onclick=()=>openPromo(card.dataset.promoId);
+    card.setAttribute("role","button");
+    card.setAttribute("tabindex","0");
+    card.onkeydown=(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openPromo(card.dataset.promoId); } };
+  });
+  $$("#promotionGrid .combo-card").forEach(card=>{
+    card.onclick=()=>openCombo(card.dataset.comboId);
+    card.setAttribute("role","button");
+    card.setAttribute("tabindex","0");
+    card.onkeydown=(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openCombo(card.dataset.comboId); } };
+  });
 }
 
 function openPromo(id){
