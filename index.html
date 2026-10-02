@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Heybaragise 🌻🐰 | Premium Apps</title>
-<link rel="stylesheet" href="style.css?v=74">
+<link rel="stylesheet" href="style.css?v=75">
 </head>
 <body>
   <div class="orb orb1"></div><div class="orb orb2"></div>
@@ -69,6 +69,11 @@
       <div id="promotionGrid" class="promo-grid"></div>
     </section>
 
+    <section id="promoDetailView" class="view">
+      <button class="back" type="button" onclick="showView('promo')">← กลับหน้าโปรโมชั่น</button>
+      <div id="promoDetail"></div>
+    </section>
+
     <section id="contactView" class="view">
       <div class="glass info-card">
         <h2>🌻🐰 Heybaragise</h2>
@@ -86,6 +91,7 @@
       <div class="admin-tabs">
         <button class="tab active" data-admin-tab="products">สินค้า</button>
         <button class="tab" data-admin-tab="promotions">โปรโมชั่น</button>
+        <button class="tab" data-admin-tab="recommendations">🎬 น่าดู / แนะนำ</button>
         <button class="tab" data-admin-tab="combos">Combo</button>
         <button class="tab" data-admin-tab="social">🌐 ติดต่อ</button>
       </div>
@@ -98,6 +104,15 @@
       <div id="adminPromotions" class="admin-panel">
         <button id="addPromoBtn" class="primary">＋ เพิ่มโปรโมชั่น</button>
         <div id="adminPromoList" class="admin-list"></div>
+      </div>
+
+      <div id="adminRecommendations" class="admin-panel">
+        <div class="panel-intro">
+          <h3>🎬 น่าดู / แนะนำ</h3>
+          <p>เพิ่ม Poster หนัง ซีรีส์ หรือคอนเทนต์แนะนำให้แสดงในหน้ารายละเอียดของแต่ละแอป</p>
+        </div>
+        <button id="addRecommendationBtn" class="primary">＋ เพิ่ม น่าดู / แนะนำ</button>
+        <div id="adminRecommendationList" class="admin-list"></div>
       </div>
 
       <div id="adminCombos" class="admin-panel">
@@ -153,6 +168,7 @@
     <h2 id="promoFormTitle">เพิ่มโปรโมชั่น</h2>
     <form id="promoForm">
       <input type="hidden" id="promoId" />
+      <input type="hidden" id="promoCurrentImage" />
       <label>สินค้า<select id="promoProduct"></select></label>
       <label>ชื่อโปรโมชั่น<input id="promoTitle" required /></label>
       <label>รายละเอียด<textarea id="promoDescription"></textarea></label>
@@ -160,6 +176,23 @@
       <label>ลิงก์ภายนอก<input id="promoLink" type="url" placeholder="https://..." /></label>
       <label class="check"><input id="promoActive" type="checkbox" checked /> เปิดแสดง</label>
       <button class="primary" type="submit">บันทึกโปรโมชั่น</button>
+    </form>
+  </dialog>
+
+  <dialog id="recommendationDialog" class="modal glass">
+    <button class="close" data-close="recommendationDialog">×</button>
+    <h2 id="recommendationFormTitle">เพิ่ม น่าดู / แนะนำ</h2>
+    <form id="recommendationForm">
+      <input type="hidden" id="recommendationId" />
+      <input type="hidden" id="recommendationCurrentImage" />
+      <label>สินค้า<select id="recommendationProduct" required></select></label>
+      <label>ชื่อรายการ<input id="recommendationTitle" required placeholder="เช่น Wednesday Season 2" /></label>
+      <label>รายละเอียด<textarea id="recommendationDescription" placeholder="เรื่องย่อ / คำแนะนำ"></textarea></label>
+      <label>รูป Poster<input id="recommendationImage" type="file" accept="image/*" /></label>
+      <label>ลิงก์ภายนอก<input id="recommendationLink" type="url" placeholder="https://..." /></label>
+      <label>ลำดับ<input id="recommendationSort" type="number" min="0" value="0" /></label>
+      <label class="check"><input id="recommendationActive" type="checkbox" checked /> เปิดแสดง</label>
+      <button class="primary" type="submit">บันทึก</button>
     </form>
   </dialog>
 
@@ -209,6 +242,6 @@
   <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=74"></script>
+  <script src="app.js?v=75"></script>
 </body>
 </html>
