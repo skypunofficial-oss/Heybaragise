@@ -1082,8 +1082,216 @@ footer { text-align: center; color: #8a97aa; padding: 30px 15px 40px; }
 }
 
 
-/* v74 promotion detail */
-.promo-detail-image{display:block;width:100%;height:auto;max-height:none;object-fit:contain;border-radius:24px;margin:0 0 20px;}
-.promo-detail-hero{overflow:hidden;}
-#promotionGrid .promo-card{cursor:pointer;}
-@media(max-width:700px){.promo-detail-image{border-radius:18px;margin-bottom:16px;}}
+/* =========================================================
+   HEYBARAGISE v73 — MOBILE 3-COLUMN + PROMOTION DETAIL FIX
+========================================================= */
+
+/* Header: keep the top brand LEFT; only the main-page hero is centered. */
+.header {
+  justify-content: flex-start;
+}
+.header .brand {
+  margin-right: auto;
+  text-align: left;
+}
+.header .social-links {
+  margin-left: auto;
+}
+
+/* Main home title/text stays centered. */
+.hero-brand {
+  text-align: center;
+}
+.hero-brand .store-name,
+.hero-brand .hero-line {
+  text-align: center;
+}
+
+/* Three cards per row on mobile. */
+@media (max-width: 700px) {
+  .product-grid,
+  .combo-grid,
+  #promotionGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .combo-card,
+  .product-card,
+  #promotionGrid .promo-card {
+    border-radius: 16px;
+  }
+
+  .combo-image-row {
+    aspect-ratio: 2 / 1;
+  }
+
+  .combo-card .card-body,
+  .product-card .card-body,
+  #promotionGrid .promo-card .card-body {
+    padding: 8px;
+  }
+
+  .combo-card .card-body h3,
+  .product-card .card-body h3,
+  #promotionGrid .promo-card .card-body h3 {
+    font-size: 12px;
+    line-height: 1.35;
+    margin: 4px 0;
+  }
+
+  .combo-card .card-body p,
+  .product-card .card-body p,
+  #promotionGrid .promo-card .card-body p {
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .combo-card .badge,
+  #promotionGrid .promo-card .badge {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+
+  .combo-card .price-sale,
+  #promotionGrid .promo-card .price-sale {
+    font-size: 16px;
+  }
+
+  .product-image,
+  .combo-product-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  /* Recommendation poster: full card width, preserve the poster's ratio. */
+  .recommended-grid.recommendation-full {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+  .recommendation-full .recommendation-card {
+    width: 100%;
+  }
+  .recommendation-full .recommendation-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    object-fit: contain;
+    background: rgba(255,255,255,.18);
+  }
+
+  .related-promo-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 7px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.22);
+    cursor: pointer;
+  }
+  .related-promo-card img {
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .related-promo-card div {
+    min-width: 0;
+  }
+  .related-promo-card b {
+    display: block;
+    color: #657691;
+    font-size: 12px;
+  }
+  .related-promo-card span {
+    display: block;
+    margin-top: 3px;
+    color: #e98db5;
+    font-size: 10px;
+  }
+}
+
+/* Promotion detail: attached poster is actually visible and fills the card. */
+.promotion-detail-card {
+  overflow: hidden;
+  border-radius: 25px;
+}
+.promotion-detail-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: rgba(255,255,255,.18);
+}
+.promotion-detail-body {
+  padding: 20px;
+}
+.promotion-detail-body h1 {
+  color: #596b86;
+  margin: 10px 0;
+}
+
+@media (max-width: 390px) {
+  .product-grid,
+  .combo-grid,
+  #promotionGrid {
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL FIX — PROMOTION LIKE RECOMMENDATION + SAFE VIEW BACK
+========================================================= */
+@media (max-width: 700px) {
+  /* Promotion poster uses the same full-width treatment as
+     the "น่าดู / แนะนำ" poster on product detail. */
+  #promotionGrid .promo-recommendation-card {
+    grid-column: 1 / -1;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  #promotionGrid .promo-recommendation-card .promo-image-full {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    background: rgba(255,255,255,.18);
+  }
+
+  #promotionGrid .promo-recommendation-card .card-body {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  #promotionGrid .promo-recommendation-card h3 {
+    font-size: 18px;
+    line-height: 1.45;
+    margin: 8px 0;
+  }
+
+  #promotionGrid .promo-recommendation-card p {
+    font-size: 13px;
+    line-height: 1.75;
+  }
+}
+
+/* Desktop/tablet: promotion poster also spans the promotion row. */
+#promotionGrid .promo-recommendation-card {
+  grid-column: 1 / -1;
+}
+#promotionGrid .promo-recommendation-card .promo-image-full {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: rgba(255,255,255,.18);
+}
+#promotionGrid .promo-recommendation-card .card-body {
+  min-height: 0;
+}
