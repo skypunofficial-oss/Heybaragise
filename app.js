@@ -1,4 +1,4 @@
-// Heybaragise app.js v74 — promo detail navigation fixed
+// Heybaragise app.js v69 — based on v68
 // ============================
 // 1) ใส่ค่าจาก Supabase Project Settings > API
 // ============================
@@ -37,8 +37,38 @@ function richText(v=""){
     .join("<br>");
 }
 function money(v){ return Number(v||0).toLocaleString("th-TH",{maximumFractionDigits:2}); }
+function imageSrc(url){
+  if(!url)return "";
+  return url + (url.includes("?") ? "&" : "?") + "v=" + Date.now();
+}
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
-function showView(id){ $$(".view").forEach(x=>x.classList.remove("active")); $("#"+id+"View").classList.add("active"); window.scrollTo({top:0,behavior:"smooth"}); }
+function showView(id, pushHistory=true){
+  const target=$("#"+id+"View");
+  if(!target)return;
+  $$(".view").forEach(x=>x.classList.remove("active"));
+  target.classList.add("active");
+  if(pushHistory){
+    const current=history.state?.view;
+    if(current!==id){
+      history.pushState({view:id},"", "#"+id);
+    }
+  }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function backToView(id){
+  showView(id,false);
+  history.replaceState({view:id},"", "#"+id);
+}
+
+window.addEventListener("popstate",()=>{
+  const view=history.state?.view || (location.hash ? location.hash.slice(1) : "home");
+  showView(view,false);
+});
+
+if(!history.state?.view){
+  history.replaceState({view:"home"},"",location.pathname+location.search+"#home");
+}
 function openDialog(id){ $("#"+id).showModal(); }
 function closeDialog(id){ $("#"+id).close(); }
 
@@ -70,7 +100,7 @@ function enrichCombo(combo){
 function renderProducts(list=state.products){
   $("#productGrid").innerHTML = list.length ? list.map(p=>`
     <article class="product-card glass" data-id="${p.id}">
-      ${p.image_url?`<img class="product-image" src="${p.image_url}" alt="${escapeHtml(p.name)}">`:""}
+      ${p.image_url?`<img class="product-image" src="${imageSrc(p.image_url)}" alt="${escapeHtml(p.name)}">`:""}
       <div class="card-body">
         <div class="product-icon">${escapeHtml(p.icon||"📱")}</div>
         <h3>${mixedText(p.name)}</h3>
@@ -92,7 +122,7 @@ function renderHomeCombos(){
         <div class="combo-image-row">
           ${(c.combo_items || []).slice(0,2).map(i =>
             i.products?.image_url
-              ? `<img class="combo-product-image" src="${i.products.image_url}" alt="">`
+              ? `<img class="combo-product-image" src="${imageSrc(i.products.image_url)}" alt="">`
               : `<div class="combo-product-placeholder">${escapeHtml(i.products?.icon || "📱")}</div>`
           ).join("")}
         </div>
@@ -114,18 +144,21 @@ function renderHomeCombos(){
 
 function renderPromotions(){
   const promos = state.promotions.map(p=>`
-    <article class="promo-card glass" data-promo-id="${p.id}">
-      ${p.image_url?`<img class="promo-image" src="${p.image_url}" alt="">`:``}
-      <div class="card-body"><span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
-      <h3>${mixedText(p.title)}</h3><p>${richText(p.description||"")}</p>
-      <span class="external-link">ดูรายละเอียด →</span></div>
+    <article class="promo-card promo-recommendation-card glass" data-promo-id="${p.id}">
+      ${p.image_url?`<img class="promo-image-full" src="${imageSrc(p.image_url)}" alt="${escapeHtml(p.title||"")}">`:``}
+      <div class="card-body">
+        <span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
+        <h3>${mixedText(p.title)}</h3>
+        <p>${richText(p.description||"")}</p>
+        <span class="arrow">→</span>
+      </div>
     </article>`).join("");
 
   const combos = state.combos.map(c=>`
     <article class="combo-card promo-card glass" data-combo-id="${c.id}">
       <div class="combo-image-row">
         ${(c.combo_items||[]).slice(0,2).map(i=>i.products?.image_url
-          ? `<img class="combo-product-image" src="${i.products.image_url}" alt="${escapeHtml(i.products?.name||"")}">`
+          ? `<img class="combo-product-image" src="${imageSrc(i.products.image_url)}" alt="${escapeHtml(i.products?.name||"")}">`
           : `<div class="combo-product-placeholder">${escapeHtml(i.products?.icon||"📱")}</div>`
         ).join("")}
       </div>
@@ -140,36 +173,38 @@ function renderPromotions(){
     </article>`).join("");
 
   $("#promotionGrid").innerHTML = (promos+combos)||`<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
-  $$("#promotionGrid .promo-card[data-promo-id]").forEach(card=>card.onclick=()=>openPromo(card.dataset.promoId));
+  $$("#promotionGrid .promo-card[data-promo-id]").forEach(card=>card.onclick=()=>openPromotion(card.dataset.promoId));
   $$("#promotionGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
 }
 
-function openPromo(id){
+function openPromotion(id){
   const p=state.promotions.find(x=>String(x.id)===String(id));
-  if(!p) return;
-  $("#promoDetail").innerHTML=`
-    <div class="detail-hero glass promo-detail-hero">
-      ${p.image_url?`<img class="promo-detail-image" src="${p.image_url}" alt="${escapeHtml(p.title||"")}">`:``}
-      <span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
-      <h1>${mixedText(p.title)}</h1>
-      <p class="detail-description">${richText(p.description||"")}</p>
-      ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ไปยังลิงก์ภายนอก / สั่งซื้อ ↗</a></p>`:""}
-    </div>`;
-  showView("promoDetail");
+  if(!p)return;
+  $("#promotionDetail").innerHTML=`
+    <article class="promotion-detail-card glass">
+      ${p.image_url?`<img class="promotion-detail-image" src="${imageSrc(p.image_url)}" alt="${escapeHtml(p.title||"")}">`:``}
+      <div class="promotion-detail-body">
+        <span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
+        <h1>${mixedText(p.title)}</h1>
+        <p class="detail-description">${richText(p.description||"")}</p>
+        ${p.external_url?`<a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ดูเพิ่มเติม / สั่งซื้อ ↗</a>`:""}
+      </div>
+    </article>`;
+  showView("promotionDetail");
 }
 
 function openCombo(id){
   const c=state.combos.find(x=>String(x.id)===String(id)); if(!c)return;
   const items=(c.combo_items||[]).slice(0,2);
   const images=items.map(i=>i.products?.image_url
-    ? `<img class="combo-detail-product-image" src="${i.products.image_url}" alt="${escapeHtml(i.products?.name||"")}">`
+    ? `<img class="combo-detail-product-image" src="${imageSrc(i.products.image_url)}" alt="${escapeHtml(i.products?.name||"")}">`
     : `<div class="combo-detail-product-placeholder">${escapeHtml(i.products?.icon||"📱")}</div>`
   ).join("");
 
   const details=items.map(i=>`
     <section class="info-card glass combo-product-detail">
       <div class="combo-detail-heading">
-        ${i.products?.image_url?`<img class="combo-detail-small-image" src="${i.products.image_url}" alt="">`:`<span class="combo-detail-icon">${escapeHtml(i.products?.icon||"📱")}</span>`}
+        ${i.products?.image_url?`<img class="combo-detail-small-image" src="${imageSrc(i.products.image_url)}" alt="">`:`<span class="combo-detail-icon">${escapeHtml(i.products?.icon||"📱")}</span>`}
         <div>
           <span class="badge">${mixedText(i.products?.name||"สินค้า")}</span>
           <h2>${mixedText(i.products?.name||"สินค้า")}</h2>
@@ -205,15 +240,33 @@ function openProduct(id){
   const related=state.promotions.filter(x=>x.product_id===p.id);
   $("#productDetail").innerHTML=`
     <div class="detail-hero glass"><div class="detail-top">
-      ${p.image_url?`<img class="detail-image" src="${p.image_url}" alt="">`:`<div class="detail-icon">${escapeHtml(p.icon||"📱")}</div>`}
+      ${p.image_url?`<img class="detail-image" src="${imageSrc(p.image_url)}" alt="">`:`<div class="detail-icon">${escapeHtml(p.icon||"📱")}</div>`}
       <div><span class="badge">Premium App</span><h1>${mixedText(p.name)}</h1><p>${richText(p.description||p.short_description||"")}</p></div>
     </div></div>
     <div class="detail-grid">
       <section class="info-card glass"><h2>💳 ราคาแพ็กเกจ</h2>${packages}</section>
-      <section class="info-card glass"><h2>🎁 โปรโมชั่น</h2>${related.length?related.map(x=>`<div class="package">${mixedText(x.title)}</div>`).join(""):"<p>ยังไม่มีโปรโมชั่น</p>"}</section>
-      <section class="info-card glass"><h2>🎬 น่าดู / แนะนำ</h2><p>Admin สามารถใช้ “โปรโมชั่น” เพิ่ม Poster ซีรีส์ หนัง หรือคอนเทนต์น่าดูของแต่ละแอปได้ พร้อมรูปและลิงก์ภายนอก</p></section>
+      <section class="info-card glass product-promotions-card">
+        <h2>🎁 โปรโมชั่น</h2>
+        ${related.length?related.map(x=>`
+          <article class="related-promo-card" data-promo-id="${x.id}">
+            ${x.image_url?`<img src="${imageSrc(x.image_url)}" alt="${escapeHtml(x.title||"")}">`:``}
+            <div><b>${mixedText(x.title)}</b><span>ดูรายละเอียด →</span></div>
+          </article>`).join(""):"<p>ยังไม่มีโปรโมชั่น</p>"}
+      </section>
     </div>
+    <section class="recommended-section">
+      <div class="section-head"><h2>🎬 น่าดู / แนะนำ</h2></div>
+      <div class="recommended-grid recommendation-full">
+        ${related.length?related.map(x=>`
+          <article class="recommendation-card glass" data-promo-id="${x.id}">
+            ${x.image_url?`<img class="recommendation-image" src="${imageSrc(x.image_url)}" alt="${escapeHtml(x.title||"")}">`:``}
+            <div class="card-body"><h3>${mixedText(x.title)}</h3><p>${richText(x.description||"")}</p></div>
+          </article>`).join(""):`<div class="glass info-card"><p>ยังไม่มีรายการแนะนำ</p></div>`}
+      </div>
+    </section>
     ${p.external_url?`<p style="margin-top:18px"><a class="external-link" href="${p.external_url}" target="_blank" rel="noopener">ไปยังลิงก์ภายนอก / สั่งซื้อ ↗</a></p>`:""}`;
+
+  $$("#productDetail [data-promo-id]").forEach(card=>card.onclick=()=>openPromotion(card.dataset.promoId));
   showView("detail");
 }
 const searchInput = $("#search");
