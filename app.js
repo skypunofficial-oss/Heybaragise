@@ -42,33 +42,7 @@ function imageSrc(url){
   return url + (url.includes("?") ? "&" : "?") + "v=" + Date.now();
 }
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
-function showView(id, pushHistory=true){
-  const target=$("#"+id+"View");
-  if(!target)return;
-  $$(".view").forEach(x=>x.classList.remove("active"));
-  target.classList.add("active");
-  if(pushHistory){
-    const current=history.state?.view;
-    if(current!==id){
-      history.pushState({view:id},"", "#"+id);
-    }
-  }
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function backToView(id){
-  showView(id,false);
-  history.replaceState({view:id},"", "#"+id);
-}
-
-window.addEventListener("popstate",()=>{
-  const view=history.state?.view || (location.hash ? location.hash.slice(1) : "home");
-  showView(view,false);
-});
-
-if(!history.state?.view){
-  history.replaceState({view:"home"},"",location.pathname+location.search+"#home");
-}
+function showView(id){ $$(".view").forEach(x=>x.classList.remove("active")); $("#"+id+"View").classList.add("active"); window.scrollTo({top:0,behavior:"smooth"}); }
 function openDialog(id){ $("#"+id).showModal(); }
 function closeDialog(id){ $("#"+id).close(); }
 
@@ -143,9 +117,10 @@ function renderHomeCombos(){
 }
 
 function renderPromotions(){
+  // โปรโมชั่นใช้โครงสร้างเดียวกับ “น่าดู / แนะนำ”
   const promos = state.promotions.map(p=>`
-    <article class="promo-card promo-recommendation-card glass" data-promo-id="${p.id}">
-      ${p.image_url?`<img class="promo-image-full" src="${imageSrc(p.image_url)}" alt="${escapeHtml(p.title||"")}">`:``}
+    <article class="recommendation-card glass promo-recommendation-card" data-promo-id="${p.id}">
+      ${p.image_url?`<img class="recommendation-image" src="${imageSrc(p.image_url)}" alt="${escapeHtml(p.title||"")}">`:``}
       <div class="card-body">
         <span class="badge">${escapeHtml(p.products?.icon||"🎁")} ${escapeHtml(p.products?.name||"โปรโมชั่น")}</span>
         <h3>${mixedText(p.title)}</h3>
@@ -173,8 +148,8 @@ function renderPromotions(){
     </article>`).join("");
 
   $("#promotionGrid").innerHTML = (promos+combos)||`<div class="empty">ยังไม่มีโปรโมชั่น</div>`;
-  $$("#promotionGrid .promo-card[data-promo-id]").forEach(card=>card.onclick=()=>openPromotion(card.dataset.promoId));
-  $$("#promotionGrid .combo-card").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
+  $$("#promotionGrid [data-promo-id]").forEach(card=>card.onclick=()=>openPromotion(card.dataset.promoId));
+  $$("#promotionGrid .combo-card[data-combo-id]").forEach(card=>card.onclick=()=>openCombo(card.dataset.comboId));
 }
 
 function openPromotion(id){
